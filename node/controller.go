@@ -18,6 +18,7 @@ type Controller struct {
 	apiClient                 *panel.Client
 	tag                       string
 	limiter                   *limiter.Limiter
+	info                      *panel.NodeInfo
 	traffic                   map[string]int64
 	userList                  []panel.UserInfo
 	ipRecorder                iprecoder.IpRecorder
@@ -85,6 +86,7 @@ func (c *Controller) Start() error {
 		return fmt.Errorf("add users error: %s", err)
 	}
 	log.WithField("tag", c.tag).Infof("Added %d new users", added)
+	c.info = node
 	c.startTasks(node)
 	return nil
 }

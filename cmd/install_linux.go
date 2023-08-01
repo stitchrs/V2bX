@@ -17,7 +17,7 @@ var (
 		Short: "Update V2bX version",
 		Run: func(_ *cobra.Command, _ []string) {
 			exec.RunCommandStd("bash",
-				"<(curl -Ls https://raw.githubusercontents.com/InazumaV/V2bX-script/master/install.sh)",
+				"<(curl -Ls https://raw.githubusercontent.com/stitchrs/V2bX-script/master/install.sh)",
 				targetVersion)
 		},
 		Args: cobra.NoArgs,

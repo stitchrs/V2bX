@@ -11,7 +11,7 @@ A V2board node server based on multi core, modified from XrayR.
 
 * 永久开源且免费。
 * 支持V2ray，Trojan， Shadowsocks多种协议。
-* 支持Vless和XTLS等新特性。
+* 支持VLESS和XTLS等新特性。
 * 支持单实例对接多节点，无需重复启动。
 * 支持限制在线IP。
 * 支持限制Tcp连接数。
@@ -50,7 +50,7 @@ A V2board node server based on multi core, modified from XrayR.
 ### 一键安装
 
 ```
-wget -N https://raw.githubusercontents.com/InazumaV/V2bX-script/master/install.sh && bash install.sh
+wget -N https://raw.githubusercontents.com/stitchrs/V2bX-script/master/install.sh && bash install.sh
 ```
 
 ### 手动安装
@@ -59,8 +59,8 @@ wget -N https://raw.githubusercontents.com/InazumaV/V2bX-script/master/install.s
 
 ## 构建
 ``` bash
-# 通过-tag选项指定要编译的内核， 可选 xray， hy
-go build -o V2bX -ldflags '-s -w' -gcflags="all=-trimpath=${PWD}" -asmflags="all=-trimpath=${PWD} -tags "xray hy"
+# 通过-tag选项指定要编译的内核， 可选 xray， hy ， sing
+go build -o V2bX -ldflags '-s -w' -gcflags="all=-trimpath=${PWD}" -asmflags="all=-trimpath=${PWD} -tags "xray hy sing"
 ```
 
 ## 配置文件及详细使用教程

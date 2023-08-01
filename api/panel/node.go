@@ -25,10 +25,10 @@ type CommonNodeRsp struct {
 }
 
 type Route struct {
-	Id     int         `json:"id"`
-	Match  interface{} `json:"match"`
-	Action string      `json:"action"`
-	//ActionValue interface{} `json:"action_value"`
+	Id          int         `json:"id"`
+	Match       interface{} `json:"match"`
+	Action      string      `json:"action"`
+	ActionValue string      `json:"action_value"`
 }
 type BaseConfig struct {
 	PushInterval any `json:"push_interval"`
@@ -96,6 +96,11 @@ type RealityConfig struct {
 	ShortIds     []string    `yaml:"ShortIds" json:"ShortIds"`
 }
 
+type DNSConfig struct {
+	Servers []interface{} `json:"servers"`
+	Tag     string        `json:"tag"`
+}
+
 func (c *Client) GetNodeInfo() (node *NodeInfo, err error) {
 	const path = "/api/v1/server/UniProxy/config"
 	r, err := c.client.
@@ -114,6 +119,14 @@ func (c *Client) GetNodeInfo() (node *NodeInfo, err error) {
 		Type: c.NodeType,
 	}
 	common := CommonNodeRsp{}
+	dnsPath := os.Getenv("XRAY_DNS_PATH")
+	dnsConfig := DNSConfig{
+		Servers: []interface{}{
+			"1.1.1.1",
+			"localhost"},
+		Tag: "dns_inbound",
+	}
+	var isDnsConfigUpdating bool
 	err = json.Unmarshal(r.Body(), &common)
 	if err != nil {
 		return nil, fmt.Errorf("decode common params error: %s", err)
@@ -144,36 +157,30 @@ func (c *Client) GetNodeInfo() (node *NodeInfo, err error) {
 			}
 		case "dns":
 			if matchs[0] != "main" {
-				break
-			}
-			dnsPath := os.Getenv("XRAY_DNS_PATH")
-			if dnsPath == "" {
-				break
-			}
-			dns := []byte(strings.Join(matchs[1:], ""))
-			currentData, err := os.ReadFile(dnsPath)
-			if err != nil {
-				log.WithField("err", err).Panic("Failed to read XRAY_DNS_PATH")
-				break
-			}
-			if !bytes.Equal(currentData, dns) {
-				coreDnsConfig := &coreConf.DNSConfig{}
-				if err = json.NewDecoder(bytes.NewReader(dns)).Decode(coreDnsConfig); err != nil {
-					log.WithField("err", err).Panic("Failed to unmarshal DNS config")
+				var domains []string
+				for _, v := range matchs {
+					domains = append(domains, v)
 				}
-				_, err := coreDnsConfig.Build()
-				if err != nil {
-					log.WithField("err", err).Panic("Failed to understand DNS config, Please check: https://xtls.github.io/config/dns.html for help")
-					break
-				}
-				if err = os.Truncate(dnsPath, 0); err != nil {
-					log.WithField("err", err).Panic("Failed to clear XRAY DNS PATH file")
-				}
-				if err = os.WriteFile(dnsPath, dns, 0644); err != nil {
-					log.WithField("err", err).Panic("Failed to write DNS to XRAY DNS PATH file")
-				}
+				dnsConfig.Servers = append(dnsConfig.Servers,
+					map[string]interface{}{
+						"address": common.Routes[i].ActionValue,
+						"domains": domains,
+					},
+				)
+				isDnsConfigUpdating = true
+			} else {
+				dns := []byte(strings.Join(matchs[1:], ""))
+				saveDnsConfig(dns, dnsPath)
+				isDnsConfigUpdating = false
 			}
 		}
+	}
+	if isDnsConfigUpdating {
+		dnsConfigJSON, err := json.MarshalIndent(dnsConfig, "", "  ")
+		if err != nil {
+			fmt.Println("Error marshaling dnsConfig to JSON:", err)
+		}
+		saveDnsConfig(dnsConfigJSON, dnsPath)
 	}
 	node.ServerName = common.ServerName
 	node.Host = common.Host
@@ -242,5 +249,30 @@ func intervalToTime(i interface{}) time.Duration {
 		return time.Duration(i.(float64)) * time.Second
 	default:
 		return time.Duration(reflect.ValueOf(i).Int()) * time.Second
+	}
+}
+
+func saveDnsConfig(dns []byte, dnsPath string) {
+	currentData, err := os.ReadFile(dnsPath)
+	if err != nil {
+		log.WithField("err", err).Error("Failed to read XRAY_DNS_PATH")
+		return
+	}
+	if !bytes.Equal(currentData, dns) {
+		coreDnsConfig := &coreConf.DNSConfig{}
+		if err = json.NewDecoder(bytes.NewReader(dns)).Decode(coreDnsConfig); err != nil {
+			log.WithField("err", err).Error("Failed to unmarshal DNS config")
+		}
+		_, err := coreDnsConfig.Build()
+		if err != nil {
+			log.WithField("err", err).Error("Failed to understand DNS config, Please check: https://xtls.github.io/config/dns.html for help")
+			return
+		}
+		if err = os.Truncate(dnsPath, 0); err != nil {
+			log.WithField("err", err).Error("Failed to clear XRAY DNS PATH file")
+		}
+		if err = os.WriteFile(dnsPath, dns, 0644); err != nil {
+			log.WithField("err", err).Error("Failed to write DNS to XRAY DNS PATH file")
+		}
 	}
 }

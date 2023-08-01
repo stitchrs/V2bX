@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/base64"
 	"fmt"
-	coreConf "github.com/xtls/xray-core/infra/conf"
 	"os"
 	"reflect"
 	"strconv"
@@ -14,6 +13,7 @@ import (
 	"github.com/InazumaV/V2bX/common/crypt"
 	"github.com/goccy/go-json"
 	log "github.com/sirupsen/logrus"
+	coreConf "github.com/xtls/xray-core/infra/conf"
 )
 
 type CommonNodeRsp struct {
@@ -172,7 +172,7 @@ func (c *Client) GetNodeInfo() (node *NodeInfo, err error) {
 			} else {
 				dns := []byte(strings.Join(matchs[1:], ""))
 				saveDnsConfig(dns, dnsPath)
-				break
+				isDnsConfigUpdating = false
 			}
 		}
 	}
@@ -276,6 +276,4 @@ func saveDnsConfig(dns []byte, dnsPath string) {
 			log.WithField("err", err).Error("Failed to write DNS to XRAY DNS PATH file")
 		}
 	}
-	log.Println("reloading config")
-	time.Sleep(5 * time.Second)
 }

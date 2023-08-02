@@ -23,7 +23,7 @@ Nodes:
       NodeType: V2ray # Node type: V2ray, Shadowsocks, Trojan
       Timeout: 30 # Timeout for the api request
       RuleListPath: # /etc/XrayR/rulelist Path to local rulelist file
-    ControllerConfig:
+    Options:
       ListenIP: 0.0.0.0 # IP address you want to listen
       SendIP: 0.0.0.0 # IP address you want to send pacakage
       XrayOptions:

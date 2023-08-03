@@ -19,6 +19,7 @@ require (
 	github.com/juju/ratelimit v1.0.2
 	github.com/oschwald/geoip2-golang v1.9.0
 	github.com/sagernet/sing v0.2.9
+	github.com/sagernet/sing-dns v0.1.8
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/cobra v1.7.0
 	github.com/xtls/xray-core v1.8.3
@@ -176,7 +177,6 @@ require (
 	github.com/sagernet/netlink v0.0.0-20220905062125-8043b4a9aa97 // indirect
 	github.com/sagernet/quic-go v0.0.0-20230615020047-10f05c797c02 // indirect
 	github.com/sagernet/reality v0.0.0-20230406110435-ee17307e7691 // indirect
-	github.com/sagernet/sing-dns v0.1.8 // indirect
 	github.com/sagernet/sing-mux v0.1.2 // indirect
 	github.com/sagernet/sing-shadowsocks v0.2.4 // indirect
 	github.com/sagernet/sing-shadowsocks2 v0.1.3 // indirect

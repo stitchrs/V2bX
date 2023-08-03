@@ -336,12 +336,12 @@ func updateSingDnsConfig(matchs []string, common Route, dnsConfig *SingDNSConfig
 		"disable_cache": true,
 	}
 
-	for _, ruleType := range []string{"domain", "domain_suffix", "domain_keyword", "domain_regex", "geosite"} {
+	for _, ruleType := range []string{"domain_suffix", "domain_keyword", "domain_regex", "geosite"} {
 		var domains []string
 		for _, v := range matchs {
 			split := strings.SplitN(v, ":", 2)
 			prefix := strings.ToLower(split[0])
-			if prefix == ruleType {
+			if prefix == ruleType || prefix == "domain" {
 				if len(split) > 1 {
 					domains = append(domains, split[1])
 				}

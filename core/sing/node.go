@@ -56,49 +56,63 @@ func getInboundOptions(tag string, info *panel.NodeInfo, c *conf.Options) (optio
 			DomainStrategy:           option.DomainStrategy(ds),
 		},
 	}
-	tls := option.InboundTLSOptions{
-		Enabled:         false,
-		CertificatePath: c.CertConfig.CertFile,
-		KeyPath:         c.CertConfig.KeyFile,
-		ServerName:      info.ServerName,
-		ALPN:            []string{"H3"},
-	}
+	var tls option.InboundTLSOptions
 	if info.Tls {
 		if c.CertConfig == nil {
 			return option.Inbound{}, fmt.Errorf("the CertConfig is not vail")
 		}
+		tls.Enabled = true
+		tls.Insecure = true
+		tls.ServerName = c.CertConfig.RealityConfig.ServerNames[0]
 		switch c.CertConfig.CertMode {
 		case "none", "":
 			break // disable
 		case "reality":
-			tls.Reality = &option.InboundRealityOptions{}
+			if c.CertConfig.RealityConfig == nil {
+				return option.Inbound{}, fmt.Errorf("RealityConfig is not valid")
+			}
 			rc := c.CertConfig.RealityConfig
 			if len(rc.ShortIds) == 0 {
 				rc.ShortIds = []string{""}
 			}
-			tls.Reality.ShortID = rc.ShortIds
-			tls.Reality.PrivateKey = rc.PrivateKey
-			mtd, _ := strconv.Atoi(strconv.FormatUint(rc.Xver, 10))
-			tls.Reality.MaxTimeDifference = option.Duration(time.Duration(mtd) * time.Second)
+			dest, _ := strconv.Atoi(rc.Dest)
+			mtd, _ := strconv.Atoi(strconv.FormatUint(rc.MaxTimeDiff, 10))
+			tls.Reality = &option.InboundRealityOptions{
+				Enabled:           true,
+				ShortID:           rc.ShortIds,
+				PrivateKey:        rc.PrivateKey,
+				MaxTimeDifference: option.Duration(time.Duration(mtd) * time.Second),
+				Handshake: option.InboundRealityHandshakeOptions{
+					ServerOptions: option.ServerOptions{
+						Server:     rc.ServerNames[0],
+						ServerPort: uint16(dest),
+					},
+				},
+			}
+
 		case "remote":
 			if info.ExtraConfig.EnableReality == "true" {
-				tls.Reality = &option.InboundRealityOptions{}
+				if c.CertConfig.RealityConfig == nil {
+					return option.Inbound{}, fmt.Errorf("RealityConfig is not valid")
+				}
 				rc := info.ExtraConfig.RealityConfig
-				tls.Reality.Enabled = true
 				if len(rc.ShortIds) == 0 {
 					rc.ShortIds = []string{""}
 				}
-				tls.Reality.ShortID = rc.ShortIds
-				tls.Reality.PrivateKey = rc.PrivateKey
+				dest, _ := strconv.Atoi(rc.Dest)
 				mtd, _ := strconv.Atoi(rc.MaxTimeDiff)
-				tls.Reality.MaxTimeDifference = option.Duration(time.Duration(mtd) * time.Second)
-			}
-		default:
-			tls = option.InboundTLSOptions{
-				Enabled:         info.Tls,
-				CertificatePath: c.CertConfig.CertFile,
-				KeyPath:         c.CertConfig.KeyFile,
-				ServerName:      info.ServerName,
+				tls.Reality = &option.InboundRealityOptions{
+					Enabled:           true,
+					ShortID:           rc.ShortIds,
+					PrivateKey:        rc.PrivateKey,
+					MaxTimeDifference: option.Duration(time.Duration(mtd) * time.Second),
+					Handshake: option.InboundRealityHandshakeOptions{
+						ServerOptions: option.ServerOptions{
+							Server:     rc.ServerNames[0],
+							ServerPort: uint16(dest),
+						},
+					},
+				}
 			}
 		}
 	}
@@ -192,6 +206,9 @@ func (b *Box) AddNode(tag string, info *panel.NodeInfo, config *conf.Options) er
 		c,
 		nil,
 	)
+	if err != nil {
+		return err
+	}
 	b.inbounds[tag] = in
 	err = in.Start()
 	if err != nil {

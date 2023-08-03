@@ -26,6 +26,7 @@ type SingOptions struct {
 	TCPFastOpen              bool                   `yaml:"EnableTFO"`
 	SniffEnabled             bool                   `yaml:"EnableSniff"`
 	SniffOverrideDestination bool                   `yaml:"SniffOverrideDestination"`
+	DomainStrategy           string                 `yaml:"DomainStrategy"`
 	FallBackConfigs          *FallBackConfigForSing `yaml:"FallBackConfigs"`
 }
 

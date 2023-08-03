@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"github.com/google/uuid"
+	dns "github.com/sagernet/sing-dns"
 	"net/netip"
 	"net/url"
 	"strconv"
@@ -31,6 +32,21 @@ func getInboundOptions(tag string, info *panel.NodeInfo, c *conf.Options) (optio
 	if err != nil {
 		return option.Inbound{}, fmt.Errorf("the listen ip not vail")
 	}
+	var ds dns.DomainStrategy
+	switch c.SingOptions.DomainStrategy {
+	case "":
+		ds = dns.DomainStrategyAsIS
+	case "prefer_ipv4":
+		ds = dns.DomainStrategyPreferIPv4
+	case "prefer_ipv6":
+		ds = dns.DomainStrategyPreferIPv6
+	case "ipv4_only":
+		ds = dns.DomainStrategyUseIPv4
+	case "ipv6_only":
+		ds = dns.DomainStrategyUseIPv6
+	default:
+		return option.Inbound{}, fmt.Errorf("unknown domain strategy: %s", c.SingOptions.DomainStrategy)
+	}
 	listen := option.ListenOptions{
 		Listen:        (*option.ListenAddress)(&addr),
 		ListenPort:    uint16(info.Port),
@@ -39,6 +55,7 @@ func getInboundOptions(tag string, info *panel.NodeInfo, c *conf.Options) (optio
 		InboundOptions: option.InboundOptions{
 			SniffEnabled:             c.SingOptions.SniffEnabled,
 			SniffOverrideDestination: c.SingOptions.SniffOverrideDestination,
+			DomainStrategy:           option.DomainStrategy(ds),
 		},
 	}
 	var tls option.InboundTLSOptions
@@ -47,7 +64,6 @@ func getInboundOptions(tag string, info *panel.NodeInfo, c *conf.Options) (optio
 			return option.Inbound{}, fmt.Errorf("the CertConfig is not vail")
 		}
 		tls.Enabled = true
-		tls.Insecure = true
 		tls.ServerName = info.ServerName
 		switch c.CertConfig.CertMode {
 		case "none", "":
@@ -109,7 +125,7 @@ func getInboundOptions(tag string, info *panel.NodeInfo, c *conf.Options) (optio
 		Tag: tag,
 	}
 	switch info.Type {
-	case "v2ray":
+	case "v2ray", "vless":
 		t := option.V2RayTransportOptions{
 			Type: info.Network,
 		}

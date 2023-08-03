@@ -34,6 +34,16 @@ func (b *Box) AddUsers(p *core.AddUsersParams) (added int, err error) {
 			}
 			err = b.inbounds[p.Tag].(*inbound.VMess).AddUsers(us)
 		}
+	case "vless":
+		us := make([]option.VLESSUser, len(p.UserInfo))
+		for i := range p.UserInfo {
+			us[i] = option.VLESSUser{
+				Name: p.UserInfo[i].Uuid,
+				Flow: p.NodeInfo.ExtraConfig.VlessFlow,
+				UUID: p.UserInfo[i].Uuid,
+			}
+		}
+		err = b.inbounds[p.Tag].(*inbound.VLESS).AddUsers(us)
 	case "shadowsocks":
 		us := make([]option.ShadowsocksUser, len(p.UserInfo))
 		for i := range p.UserInfo {

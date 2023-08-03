@@ -6,20 +6,18 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"fmt"
+	"github.com/InazumaV/V2bX/api/panel"
+	"github.com/InazumaV/V2bX/conf"
+	"github.com/goccy/go-json"
+	"github.com/inazumav/sing-box/inbound"
+	"github.com/inazumav/sing-box/option"
 	dns "github.com/sagernet/sing-dns"
+	F "github.com/sagernet/sing/common/format"
 	"net/netip"
 	"net/url"
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/inazumav/sing-box/inbound"
-	F "github.com/sagernet/sing/common/format"
-
-	"github.com/InazumaV/V2bX/api/panel"
-	"github.com/InazumaV/V2bX/conf"
-	"github.com/goccy/go-json"
-	"github.com/inazumav/sing-box/option"
 )
 
 type WsNetworkConfig struct {
@@ -58,7 +56,13 @@ func getInboundOptions(tag string, info *panel.NodeInfo, c *conf.Options) (optio
 			DomainStrategy:           option.DomainStrategy(ds),
 		},
 	}
-	tls := option.InboundTLSOptions{}
+	tls := option.InboundTLSOptions{
+		Enabled:         false,
+		CertificatePath: c.CertConfig.CertFile,
+		KeyPath:         c.CertConfig.KeyFile,
+		ServerName:      info.ServerName,
+		ALPN:            []string{"H3"},
+	}
 	if info.Tls {
 		if c.CertConfig == nil {
 			return option.Inbound{}, fmt.Errorf("the CertConfig is not vail")
@@ -103,7 +107,6 @@ func getInboundOptions(tag string, info *panel.NodeInfo, c *conf.Options) (optio
 	}
 	switch info.Type {
 	case "v2ray":
-	case "vless":
 		t := option.V2RayTransportOptions{
 			Type: info.Network,
 		}

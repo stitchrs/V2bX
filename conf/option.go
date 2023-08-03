@@ -1,9 +1,5 @@
 package conf
 
-import (
-	"github.com/inazumav/sing-box/option"
-)
-
 type Options struct {
 	ListenIP    string      `yaml:"ListenIP"`
 	SendIP      string      `yaml:"SendIP"`
@@ -41,10 +37,10 @@ type HyOptions struct {
 }
 
 type SingOptions struct {
-	EnableProxyProtocol      bool                  `yaml:"EnableProxyProtocol"`
-	EnableDNS                bool                  `yaml:"EnableDNS"`
-	DomainStrategy           option.DomainStrategy `yaml:"DomainStrategy"`
-	TCPFastOpen              bool                  `yaml:"EnableTFO"`
-	SniffEnabled             bool                  `json:"EnableSniff"`
-	SniffOverrideDestination bool                  `json:"SniffOverrideDestination"`
+	EnableProxyProtocol      bool   `yaml:"EnableProxyProtocol"`
+	EnableDNS                bool   `yaml:"EnableDNS"`
+	DomainStrategy           string `yaml:"DomainStrategy"`
+	TCPFastOpen              bool   `yaml:"EnableTFO"`
+	SniffEnabled             bool   `yaml:"EnableSniff"`
+	SniffOverrideDestination bool   `yaml:"SniffOverrideDestination"`
 }

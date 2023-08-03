@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"fmt"
+	dns "github.com/sagernet/sing-dns"
 	"net/netip"
 	"net/url"
 	"strconv"
@@ -31,6 +32,21 @@ func getInboundOptions(tag string, info *panel.NodeInfo, c *conf.Options) (optio
 	if err != nil {
 		return option.Inbound{}, fmt.Errorf("the listen ip not vail")
 	}
+	var ds dns.DomainStrategy
+	switch c.SingOptions.DomainStrategy {
+	case "":
+		ds = dns.DomainStrategyAsIS
+	case "prefer_ipv4":
+		ds = dns.DomainStrategyPreferIPv4
+	case "prefer_ipv6":
+		ds = dns.DomainStrategyPreferIPv6
+	case "ipv4_only":
+		ds = dns.DomainStrategyUseIPv4
+	case "ipv6_only":
+		ds = dns.DomainStrategyUseIPv6
+	default:
+		return option.Inbound{}, fmt.Errorf("unknown domain strategy: %s", c.SingOptions.DomainStrategy)
+	}
 	listen := option.ListenOptions{
 		Listen:        (*option.ListenAddress)(&addr),
 		ListenPort:    uint16(info.Port),
@@ -39,7 +55,7 @@ func getInboundOptions(tag string, info *panel.NodeInfo, c *conf.Options) (optio
 		InboundOptions: option.InboundOptions{
 			SniffEnabled:             c.SingOptions.SniffEnabled,
 			SniffOverrideDestination: c.SingOptions.SniffOverrideDestination,
-			DomainStrategy:           c.SingOptions.DomainStrategy,
+			DomainStrategy:           option.DomainStrategy(ds),
 		},
 	}
 	tls := option.InboundTLSOptions{}
@@ -51,6 +67,7 @@ func getInboundOptions(tag string, info *panel.NodeInfo, c *conf.Options) (optio
 		case "none", "":
 			break // disable
 		case "reality":
+			tls.Reality = &option.InboundRealityOptions{}
 			rc := c.CertConfig.RealityConfig
 			if len(rc.ShortIds) == 0 {
 				rc.ShortIds = []string{""}
@@ -61,6 +78,7 @@ func getInboundOptions(tag string, info *panel.NodeInfo, c *conf.Options) (optio
 			tls.Reality.MaxTimeDifference = option.Duration(time.Duration(mtd) * time.Second)
 		case "remote":
 			if info.ExtraConfig.EnableReality == "true" {
+				tls.Reality = &option.InboundRealityOptions{}
 				rc := info.ExtraConfig.RealityConfig
 				tls.Reality.Enabled = true
 				if len(rc.ShortIds) == 0 {

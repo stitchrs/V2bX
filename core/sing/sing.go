@@ -3,6 +3,7 @@ package sing
 import (
 	"context"
 	"fmt"
+	"github.com/goccy/go-json"
 	"io"
 	"os"
 	"runtime/debug"
@@ -40,13 +41,28 @@ func init() {
 }
 
 func New(c *conf.CoreConfig) (vCore.Core, error) {
+	sc := c.SingConfig
 	options := option.Options{}
 	options.Log = &option.LogOptions{
-		Disabled:  c.SingConfig.LogConfig.Disabled,
-		Level:     c.SingConfig.LogConfig.Level,
-		Timestamp: c.SingConfig.LogConfig.Timestamp,
-		Output:    c.SingConfig.LogConfig.Output,
+		Disabled:  sc.LogConfig.Disabled,
+		Level:     sc.LogConfig.Level,
+		Timestamp: sc.LogConfig.Timestamp,
+		Output:    sc.LogConfig.Output,
 	}
+	coreDnsConfig := &option.DNSOptions{}
+	os.Setenv("CORE_RUNNING", "")
+	os.Setenv("SING_DNS_PATH", "")
+	if sc.DnsConfigPath != "" {
+		if f, err := os.Open(sc.DnsConfigPath); err != nil {
+			panic("Failed to read DNS config file")
+		} else {
+			if err = json.NewDecoder(f).Decode(coreDnsConfig); err != nil {
+				panic("Failed to unmarshal DNS config")
+			}
+		}
+		os.Setenv("SING_DNS_PATH", sc.DnsConfigPath)
+	}
+
 	ctx := context.Background()
 	createdAt := time.Now()
 	experimentalOptions := common.PtrValueOrDefault(options.Experimental)
@@ -130,6 +146,7 @@ func New(c *conf.CoreConfig) (vCore.Core, error) {
 		return nil, E.Cause(err, "create v2ray api server")
 	}
 	router.SetV2RayServer(server)
+
 	return &Box{
 		router:     router,
 		inbounds:   inMap,
@@ -176,6 +193,7 @@ func (b *Box) Start() error {
 		b.Close()
 		return err
 	}
+	os.Setenv("CORE_RUNNING", "SING")
 	b.logger.Info("sing-box started (", F.Seconds(time.Since(b.createdAt).Seconds()), "s)")
 	return nil
 }
@@ -254,6 +272,7 @@ func (b *Box) Close() error {
 			return E.Cause(err, "close log factory")
 		})
 	}
+	os.Setenv("SING_RUNNING", "")
 	return errors
 }
 
@@ -264,6 +283,7 @@ func (b *Box) Router() adapter.Router {
 func (b *Box) Protocols() []string {
 	return []string{
 		"v2ray",
+		"vless",
 		"shadowsocks",
 	}
 }

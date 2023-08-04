@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/goccy/go-json"
+	"github.com/inazumav/sing-box/constant"
 	"io"
 	"os"
 	"runtime/debug"
@@ -49,20 +50,20 @@ func New(c *conf.CoreConfig) (vCore.Core, error) {
 		Timestamp: sc.LogConfig.Timestamp,
 		Output:    sc.LogConfig.Output,
 	}
-	coreDnsConfig := &option.DNSOptions{}
+	options.DNS = &option.DNSOptions{}
 	os.Setenv("CORE_RUNNING", "")
 	os.Setenv("SING_DNS_PATH", "")
+
 	if sc.DnsConfigPath != "" {
 		if f, err := os.Open(sc.DnsConfigPath); err != nil {
 			panic("Failed to read DNS config file")
 		} else {
-			if err = json.NewDecoder(f).Decode(coreDnsConfig); err != nil {
+			if err = json.NewDecoder(f).Decode(options.DNS); err != nil {
 				panic("Failed to unmarshal DNS config")
 			}
 		}
 		os.Setenv("SING_DNS_PATH", sc.DnsConfigPath)
 	}
-
 	ctx := context.Background()
 	createdAt := time.Now()
 	experimentalOptions := common.PtrValueOrDefault(options.Experimental)
@@ -194,6 +195,7 @@ func (b *Box) Start() error {
 		return err
 	}
 	os.Setenv("CORE_RUNNING", "SING")
+	log.Info("sing-box core version: ", constant.Version)
 	b.logger.Info("sing-box started (", F.Seconds(time.Since(b.createdAt).Seconds()), "s)")
 	return nil
 }

@@ -5,6 +5,7 @@ import (
 	"github.com/fsnotify/fsnotify"
 	"log"
 	"path"
+	"path/filepath"
 	"time"
 )
 
@@ -28,9 +29,10 @@ func (p *Conf) Watch(filePath, xDnsPath, sDnsPath string, reload func()) error {
 				pre = time.Now()
 				go func() {
 					time.Sleep(10 * time.Second)
-					if e.Name == xDnsPath || e.Name == sDnsPath {
+					switch filepath.Base(e.Name) {
+					case filepath.Base(xDnsPath), filepath.Base(sDnsPath):
 						log.Println("DNS file changed, reloading...")
-					} else {
+					default:
 						log.Println("config dir changed, reloading...")
 					}
 					*p = *New()

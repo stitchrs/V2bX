@@ -106,6 +106,8 @@ type SingDNSConfig struct {
 	Rules   []map[string]interface{} `json:"rules"`
 }
 
+var initFinish bool
+
 func (c *Client) GetNodeInfo() (node *NodeInfo, err error) {
 	const path = "/api/v1/server/UniProxy/config"
 	r, err := c.client.
@@ -125,25 +127,31 @@ func (c *Client) GetNodeInfo() (node *NodeInfo, err error) {
 	}
 	common := CommonNodeRsp{}
 
+	var env = os.Getenv("CORE_RUNNING")
 	XrayDnsPath := os.Getenv("XRAY_DNS_PATH")
-	XrayDnsConfig := XrayDNSConfig{
-		Servers: []interface{}{
-			"1.1.1.1",
-			"localhost"},
-		Tag: "dns_inbound",
-	}
-
 	SingDnsPath := os.Getenv("SING_DNS_PATH")
-	SingDnsConfig := SingDNSConfig{
-		Servers: []map[string]string{
-			{
-				"tag":     "default",
-				"address": "1.1.1.1",
-				"detour":  "direct",
-			},
-		},
+	type dnsConfigStruct struct {
+		Config  interface{}
+		DnsPath string
 	}
-
+	var dnsConfigMap = map[string]dnsConfigStruct{
+		"SING": {Config: SingDNSConfig{
+			Servers: []map[string]string{
+				{
+					"tag":     "default",
+					"address": "https://8.8.8.8/dns-query",
+					"detour":  "direct",
+				},
+			},
+		}, DnsPath: SingDnsPath},
+		"XRAY": {Config: XrayDNSConfig{
+			Servers: []interface{}{
+				"1.1.1.1",
+				"localhost"},
+			Tag: "dns_inbound",
+		}, DnsPath: XrayDnsPath},
+	}
+	var dnsConfigObj, _ = dnsConfigMap[env]
 	var isDnsConfigUpdating bool
 	err = json.Unmarshal(r.Body(), &common)
 	if err != nil {
@@ -175,42 +183,40 @@ func (c *Client) GetNodeInfo() (node *NodeInfo, err error) {
 			}
 		case "dns":
 			if matchs[0] != "main" {
-				if os.Getenv("CORE_RUNNING") == "SING" && SingDnsPath != "" {
-					updateSingDnsConfig(matchs, common.Routes[i], &SingDnsConfig)
-				}
-				if os.Getenv("CORE_RUNNING") == "XRAY" && XrayDnsPath != "" {
-					updateXrayDnsConfig(matchs, common.Routes[i], &XrayDnsConfig)
+				switch env {
+				case "SING":
+					dnsConfig, _ := dnsConfigObj.Config.(SingDNSConfig)
+					updateSingDnsConfig(matchs, common.Routes[i], &dnsConfig)
+					dnsConfigObj.Config = dnsConfig
+				case "XRAY":
+					dnsConfig, _ := dnsConfigObj.Config.(XrayDNSConfig)
+					updateXrayDnsConfig(matchs, common.Routes[i], &dnsConfig)
+					dnsConfigObj.Config = dnsConfig
 				}
 				isDnsConfigUpdating = true
 			} else {
 				dns := []byte(strings.Join(matchs[1:], ""))
-				if os.Getenv("CORE_RUNNING") == "SING" {
-					saveDnsConfig(dns, SingDnsPath)
-				}
-				if os.Getenv("CORE_RUNNING") == "XRAY" {
-					saveDnsConfig(dns, XrayDnsPath)
+				switch env {
+				case "SING":
+					go saveDnsConfig(dns, SingDnsPath)
+				case "XRAY":
+					go saveDnsConfig(dns, XrayDnsPath)
 				}
 				isDnsConfigUpdating = false
 			}
 		}
 	}
 	if isDnsConfigUpdating {
-		if os.Getenv("SING_RUNNING") == "YES" {
-			dnsConfigJSON, err := json.MarshalIndent(SingDnsConfig, "", "  ")
-			if err != nil {
-				fmt.Println("Error marshaling dnsConfig to JSON:", err)
-			} else {
-				saveDnsConfig(dnsConfigJSON, SingDnsPath)
+		dnsConfigJSON, err := json.MarshalIndent(dnsConfigObj.Config, "", "  ")
+		if err != nil {
+			fmt.Println("Error marshaling dnsConfig to JSON:", err)
+		} else {
+			switch env {
+			case "SING":
+				go saveDnsConfig(dnsConfigJSON, SingDnsPath)
+			case "XRAY":
+				go saveDnsConfig(dnsConfigJSON, XrayDnsPath)
 			}
-		}
-		if os.Getenv("XRAY_RUNNING") == "YES" {
-			dnsConfigJSON, err := json.MarshalIndent(XrayDnsConfig, "", "  ")
-			if err != nil {
-				fmt.Println("Error marshaling dnsConfig to JSON:", err)
-			} else {
-				saveDnsConfig(dnsConfigJSON, XrayDnsPath)
-			}
-
 		}
 	}
 	node.ServerName = common.ServerName
@@ -284,13 +290,16 @@ func intervalToTime(i interface{}) time.Duration {
 }
 
 func saveDnsConfig(dns []byte, dnsPath string) {
+	if !initFinish {
+		time.Sleep(5 * time.Second)
+	}
 	currentData, err := os.ReadFile(dnsPath)
 	if err != nil {
 		log.WithField("err", err).Error("Failed to read DNS_PATH")
 		return
 	}
 	if !bytes.Equal(currentData, dns) {
-		if os.Getenv("XRAY_RUNNING") == "YES" {
+		if os.Getenv("CORE_RUNNING") == "XRAY" {
 			coreDnsConfig := &coreConf.DNSConfig{}
 			if err = json.NewDecoder(bytes.NewReader(dns)).Decode(coreDnsConfig); err != nil {
 				log.WithField("err", err).Error("Failed to unmarshal DNS config")
@@ -308,6 +317,7 @@ func saveDnsConfig(dns []byte, dnsPath string) {
 			log.WithField("err", err).Error("Failed to write DNS to XRAY DNS PATH file")
 		}
 	}
+	initFinish = true
 }
 
 func updateXrayDnsConfig(matchs []string, common Route, dnsConfig *XrayDNSConfig) {
@@ -326,9 +336,10 @@ func updateXrayDnsConfig(matchs []string, common Route, dnsConfig *XrayDNSConfig
 func updateSingDnsConfig(matchs []string, common Route, dnsConfig *SingDNSConfig) {
 	dnsConfig.Servers = append(dnsConfig.Servers,
 		map[string]string{
-			"tag":     strconv.Itoa(common.Id),
-			"address": common.ActionValue,
-			"detour":  "direct",
+			"tag":              strconv.Itoa(common.Id),
+			"address":          common.ActionValue,
+			"address_resolver": "default",
+			"detour":           "direct",
 		},
 	)
 	rule := map[string]interface{}{
@@ -336,19 +347,19 @@ func updateSingDnsConfig(matchs []string, common Route, dnsConfig *SingDNSConfig
 		"disable_cache": true,
 	}
 
-	for _, ruleType := range []string{"domain", "domain_suffix", "domain_keyword", "domain_regex", "geosite"} {
+	for _, ruleType := range []string{"domain_suffix", "domain_keyword", "domain_regex", "geosite"} {
 		var domains []string
 		for _, v := range matchs {
 			split := strings.SplitN(v, ":", 2)
 			prefix := strings.ToLower(split[0])
-			if prefix == ruleType {
+			if prefix == ruleType || (prefix == "domain" && ruleType == "domain_suffix") {
 				if len(split) > 1 {
 					domains = append(domains, split[1])
 				}
+				if len(domains) > 0 {
+					rule[ruleType] = domains
+				}
 			}
-		}
-		if len(domains) > 0 {
-			rule[ruleType] = domains
 		}
 	}
 	dnsConfig.Rules = append(dnsConfig.Rules, rule)

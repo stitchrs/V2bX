@@ -15,7 +15,7 @@ require (
 	github.com/go-resty/resty/v2 v2.7.0
 	github.com/goccy/go-json v0.10.2
 	github.com/hashicorp/go-multierror v1.1.1
-	github.com/inazumav/sing-box v0.0.0-20230730105931-e8479113c010
+	github.com/inazumav/sing-box v0.0.0-20230803163133-6b14bb174186
 	github.com/juju/ratelimit v1.0.2
 	github.com/oschwald/geoip2-golang v1.9.0
 	github.com/sagernet/sing v0.2.9
@@ -239,3 +239,5 @@ require (
 )
 
 exclude gvisor.dev/gvisor v0.0.0-20230313184804-9bf6dd27710d
+
+replace github.com/inazumav/sing-box v0.0.0-20230803163133-6b14bb174186 => github.com/stitchrs/sing-box-InazumaV v0.0.0-20230804104514-2c76047ef581

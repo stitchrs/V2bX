@@ -272,9 +272,7 @@ func (c *Client) GetNodeInfo() (node *NodeInfo, err error) {
 		node.UpMbps = rsp.UpMbps
 		node.HyObfs = rsp.Obfs
 	case "tuic":
-		rsp := HysteriaNodeRsp{}
-		err = json.Unmarshal(r.Body(), &rsp)
-
+		//NONE
 	}
 	c.nodeEtag = r.Header().Get("ETag")
 	return

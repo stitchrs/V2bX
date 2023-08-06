@@ -27,9 +27,7 @@ func (n *Node) Start(nodes []*conf.NodeConfig, core vCore.Core) error {
 		n.controllers[i] = NewController(core, p, c.Options)
 		err = n.controllers[i].Start()
 		NodeType := c.ApiConfig.NodeType
-		if NodeType == "hysteria" && c.Options.SingOptions.EnableTUIC {
-			NodeType = "tuic"
-		}
+
 		if err != nil {
 			return fmt.Errorf("start node controller [%s-%s-%d] error: %s",
 				NodeType,

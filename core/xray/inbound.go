@@ -26,6 +26,8 @@ func buildInbound(config *conf.Options, nodeInfo *panel.NodeInfo, tag string) (*
 	switch nodeInfo.Type {
 	case "v2ray":
 		err = buildV2ray(config, nodeInfo, in)
+	case "vless":
+		err = buildVLESS(config, nodeInfo, in)
 	case "trojan":
 		err = buildTrojan(config, in)
 	case "shadowsocks":
@@ -153,6 +155,7 @@ func buildInbound(config *conf.Options, nodeInfo *panel.NodeInfo, tag string) (*
 func buildV2ray(config *conf.Options, nodeInfo *panel.NodeInfo, inbound *coreConf.InboundDetourConfig) error {
 	if nodeInfo.ExtraConfig.EnableVless == "true" {
 		//Set vless
+		nodeInfo.Type = "vless"
 		inbound.Protocol = "vless"
 		if config.XrayOptions.EnableFallback {
 			// Set fallback
@@ -185,6 +188,57 @@ func buildV2ray(config *conf.Options, nodeInfo *panel.NodeInfo, inbound *coreCon
 		s, err := json.Marshal(&coreConf.VMessInboundConfig{})
 		if err != nil {
 			return fmt.Errorf("marshal vmess settings error: %s", err)
+		}
+		inbound.Settings = (*json.RawMessage)(&s)
+	}
+	if len(nodeInfo.NetworkSettings) == 0 {
+		return nil
+	}
+	switch nodeInfo.Network {
+	case "tcp":
+		err := json.Unmarshal(nodeInfo.NetworkSettings, &inbound.StreamSetting.TCPSettings)
+		if err != nil {
+			return fmt.Errorf("unmarshal tcp settings error: %s", err)
+		}
+	case "ws":
+		err := json.Unmarshal(nodeInfo.NetworkSettings, &inbound.StreamSetting.WSSettings)
+		if err != nil {
+			return fmt.Errorf("unmarshal ws settings error: %s", err)
+		}
+	case "grpc":
+		err := json.Unmarshal(nodeInfo.NetworkSettings, &inbound.StreamSetting.GRPCConfig)
+		if err != nil {
+			return fmt.Errorf("unmarshal grpc settings error: %s", err)
+		}
+	default:
+		return errors.New("the network type is not vail")
+	}
+	return nil
+}
+func buildVLESS(config *conf.Options, nodeInfo *panel.NodeInfo, inbound *coreConf.InboundDetourConfig) error {
+	//Set vless
+	inbound.Protocol = "vless"
+	if config.XrayOptions.EnableFallback {
+		// Set fallback
+		fallbackConfigs, err := buildVlessFallbacks(config.XrayOptions.FallBackConfigs)
+		if err != nil {
+			return err
+		}
+		s, err := json.Marshal(&coreConf.VLessInboundConfig{
+			Decryption: "none",
+			Fallbacks:  fallbackConfigs,
+		})
+		if err != nil {
+			return fmt.Errorf("marshal vless fallback config error: %s", err)
+		}
+		inbound.Settings = (*json.RawMessage)(&s)
+	} else {
+		var err error
+		s, err := json.Marshal(&coreConf.VLessInboundConfig{
+			Decryption: "none",
+		})
+		if err != nil {
+			return fmt.Errorf("marshal vless config error: %s", err)
 		}
 		inbound.Settings = (*json.RawMessage)(&s)
 	}

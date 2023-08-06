@@ -3,7 +3,6 @@ package xray
 import (
 	"context"
 	"fmt"
-
 	"github.com/InazumaV/V2bX/api/panel"
 	"github.com/InazumaV/V2bX/common/format"
 	vCore "github.com/InazumaV/V2bX/core"

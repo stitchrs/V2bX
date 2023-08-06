@@ -2,7 +2,6 @@ package sing
 
 import (
 	"errors"
-
 	"github.com/InazumaV/V2bX/api/panel"
 	"github.com/InazumaV/V2bX/common/counter"
 	"github.com/InazumaV/V2bX/core"
@@ -38,11 +37,12 @@ func (b *Box) AddUsers(p *core.AddUsersParams) (added int, err error) {
 		for i := range p.UserInfo {
 			us[i] = option.VLESSUser{
 				Name: p.UserInfo[i].Uuid,
-				Flow: p.NodeInfo.ExtraConfig.VlessFlow,
 				UUID: p.UserInfo[i].Uuid,
+				Flow: p.NodeInfo.ExtraConfig.VlessFlow,
 			}
 		}
 		err = b.inbounds[p.Tag].(*inbound.VLESS).AddUsers(us)
+
 	case "shadowsocks":
 		us := make([]option.ShadowsocksUser, len(p.UserInfo))
 		for i := range p.UserInfo {
@@ -51,6 +51,17 @@ func (b *Box) AddUsers(p *core.AddUsersParams) (added int, err error) {
 				Password: p.UserInfo[i].Uuid,
 			}
 		}
+		err = b.inbounds[p.Tag].(*inbound.ShadowsocksMulti).AddUsers(us)
+	case "tuic":
+		us := make([]option.TUICUser, len(p.UserInfo))
+		for i := range p.UserInfo {
+			us[i] = option.TUICUser{
+				Name:     p.UserInfo[i].Uuid,
+				UUID:     p.UserInfo[i].Uuid,
+				Password: "tuic",
+			}
+		}
+		err = b.inbounds[p.Tag].(*inbound.TUIC).AddUsers(us)
 	}
 	if err != nil {
 		return 0, err
@@ -85,6 +96,8 @@ func (b *Box) DelUsers(users []panel.UserInfo, tag string) error {
 			del = i.(*inbound.VLESS)
 		case "shadowsocks":
 			del = i.(*inbound.ShadowsocksMulti)
+		case "tuic":
+			del = i.(*inbound.TUIC)
 		}
 	} else {
 		return errors.New("the inbound not found")

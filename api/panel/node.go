@@ -69,8 +69,9 @@ type NodeInfo struct {
 	ServerKey       string
 	Cipher          string
 	HyObfs          string
-	PushInterval    time.Duration
-	PullInterval    time.Duration
+
+	PushInterval time.Duration
+	PullInterval time.Duration
 }
 
 type Rules struct {
@@ -270,6 +271,10 @@ func (c *Client) GetNodeInfo() (node *NodeInfo, err error) {
 		node.DownMbps = rsp.DownMbps
 		node.UpMbps = rsp.UpMbps
 		node.HyObfs = rsp.Obfs
+	case "tuic":
+		rsp := HysteriaNodeRsp{}
+		err = json.Unmarshal(r.Body(), &rsp)
+
 	}
 	c.nodeEtag = r.Header().Get("ETag")
 	return
@@ -292,6 +297,9 @@ func intervalToTime(i interface{}) time.Duration {
 func saveDnsConfig(dns []byte, dnsPath string) {
 	if !initFinish {
 		time.Sleep(5 * time.Second)
+	}
+	if dnsPath == "" {
+		return
 	}
 	currentData, err := os.ReadFile(dnsPath)
 	if err != nil {

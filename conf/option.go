@@ -39,6 +39,8 @@ type HyOptions struct {
 type SingOptions struct {
 	EnableProxyProtocol      bool   `yaml:"EnableProxyProtocol"`
 	EnableDNS                bool   `yaml:"EnableDNS"`
+	EnableTUIC               bool   `yaml:"EnableTUIC"`
+	CongestionControl        string `yaml:"CongestionControl"`
 	DomainStrategy           string `yaml:"DomainStrategy"`
 	TCPFastOpen              bool   `yaml:"EnableTFO"`
 	SniffEnabled             bool   `yaml:"EnableSniff"`

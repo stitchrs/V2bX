@@ -9,6 +9,7 @@ import (
 	"github.com/InazumaV/V2bX/api/panel"
 	"github.com/InazumaV/V2bX/conf"
 	"github.com/goccy/go-json"
+	"github.com/google/uuid"
 	"github.com/inazumav/sing-box/inbound"
 	"github.com/inazumav/sing-box/option"
 	dns "github.com/sagernet/sing-dns"
@@ -57,13 +58,13 @@ func getInboundOptions(tag string, info *panel.NodeInfo, c *conf.Options) (optio
 		},
 	}
 	var tls option.InboundTLSOptions
-	if info.Tls {
+	if info.Tls || info.Type == "hysteria" {
 		if c.CertConfig == nil {
 			return option.Inbound{}, fmt.Errorf("the CertConfig is not vail")
 		}
 		tls.Enabled = true
 		tls.Insecure = true
-		tls.ServerName = c.CertConfig.RealityConfig.ServerNames[0]
+		tls.ServerName = info.ServerName
 		switch c.CertConfig.CertMode {
 		case "none", "":
 			break // disable
@@ -72,6 +73,7 @@ func getInboundOptions(tag string, info *panel.NodeInfo, c *conf.Options) (optio
 				return option.Inbound{}, fmt.Errorf("RealityConfig is not valid")
 			}
 			rc := c.CertConfig.RealityConfig
+			tls.ServerName = rc.ServerNames[0]
 			if len(rc.ShortIds) == 0 {
 				rc.ShortIds = []string{""}
 			}
@@ -114,11 +116,18 @@ func getInboundOptions(tag string, info *panel.NodeInfo, c *conf.Options) (optio
 					},
 				}
 			}
+		default:
+			tls.CertificatePath = c.CertConfig.CertFile
+			tls.KeyPath = c.CertConfig.KeyFile
 		}
 	}
 	in := option.Inbound{
 		Tag: tag,
 	}
+	if info.Type == "hysteria" && c.SingOptions.EnableTUIC {
+		info.Type = "tuic"
+	}
+
 	switch info.Type {
 	case "v2ray":
 		t := option.V2RayTransportOptions{
@@ -177,18 +186,31 @@ func getInboundOptions(tag string, info *panel.NodeInfo, c *conf.Options) (optio
 		p := make([]byte, 32)
 		_, _ = rand.Read(p)
 		randomPasswd := hex.EncodeToString(p)
-		if strings.Contains(info.Cipher, "2022") {
-			randomPasswd = base64.StdEncoding.EncodeToString([]byte(randomPasswd))
-		}
 		in.ShadowsocksOptions = option.ShadowsocksInboundOptions{
 			ListenOptions: listen,
 			Method:        info.Cipher,
-			Password:      info.ServerKey,
-			Users: []option.ShadowsocksUser{
+		}
+		if strings.Contains(info.Cipher, "2022") {
+			randomPasswd = base64.StdEncoding.EncodeToString([]byte(randomPasswd))
+			//in.ShadowsocksOptions.Method = ""
+			in.ShadowsocksOptions.Password = randomPasswd
+		}
+		in.ShadowsocksOptions.Users = []option.ShadowsocksUser{{
+			Password: randomPasswd,
+		}}
+	case "tuic":
+		in.Type = "tuic"
+		in.TUICOptions = option.TUICInboundOptions{
+			ListenOptions: listen,
+			Users: []option.TUICUser{
 				{
-					Password: randomPasswd,
+					Name:     uuid.New().String(),
+					UUID:     uuid.New().String(),
+					Password: "tuic",
 				},
 			},
+			CongestionControl: c.SingOptions.CongestionControl,
+			TLS:               &tls,
 		}
 	}
 	return in, nil

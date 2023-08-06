@@ -59,7 +59,7 @@ type NodeInfo struct {
 	Host            string
 	Port            int
 	Network         string
-	ExtraConfig     V2rayExtraConfig
+	ExtraConfig     ExtraConfig
 	NetworkSettings json.RawMessage
 	Tls             bool
 	ServerName      string
@@ -68,6 +68,7 @@ type NodeInfo struct {
 	ServerKey       string
 	Cipher          string
 	HyObfs          string
+	EnableTuic      bool
 	PushInterval    time.Duration
 	PullInterval    time.Duration
 }
@@ -77,7 +78,7 @@ type Rules struct {
 	Protocol []string
 }
 
-type V2rayExtraConfig struct {
+type ExtraConfig struct {
 	EnableVless   string         `json:"EnableVless"`
 	VlessFlow     string         `json:"VlessFlow"`
 	EnableReality string         `json:"EnableReality"`
@@ -291,6 +292,9 @@ func intervalToTime(i interface{}) time.Duration {
 func saveDnsConfig(dns []byte, dnsPath string) {
 	if !initFinish {
 		time.Sleep(5 * time.Second)
+	}
+	if dnsPath == "" {
+		return
 	}
 	currentData, err := os.ReadFile(dnsPath)
 	if err != nil {

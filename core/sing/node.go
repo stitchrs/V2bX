@@ -243,13 +243,46 @@ func getInboundOptions(tag string, info *panel.NodeInfo, c *conf.Options) (optio
 			}
 		}
 	case "hysteria":
-		in.Type = "hysteria"
-		in.HysteriaOptions = option.HysteriaInboundOptions{
+		if c.SingOptions.EnableTUIC {
+			in.Type = "tuic"
+			info.EnableTuic = true
+			tls.ALPN = c.SingOptions.TuicConfig.Alpn
+			in.TUICOptions = option.TUICInboundOptions{
+				ListenOptions: listen,
+				Users: []option.TUICUser{
+					{
+						Name:     uuid.New().String(),
+						UUID:     uuid.New().String(),
+						Password: "tuic",
+					},
+				},
+				CongestionControl: c.SingOptions.TuicConfig.CongestionControl,
+				TLS:               &tls,
+			}
+		} else {
+			in.Type = "hysteria"
+			in.HysteriaOptions = option.HysteriaInboundOptions{
+				ListenOptions: listen,
+				UpMbps:        info.UpMbps,
+				DownMbps:      info.DownMbps,
+				Obfs:          info.HyObfs,
+				TLS:           &tls,
+			}
+		}
+	case "tuic":
+		in.Type = "tuic"
+		tls.ALPN = c.SingOptions.TuicConfig.Alpn
+		in.TUICOptions = option.TUICInboundOptions{
 			ListenOptions: listen,
-			UpMbps:        info.UpMbps,
-			DownMbps:      info.DownMbps,
-			Obfs:          info.HyObfs,
-			TLS:           &tls,
+			Users: []option.TUICUser{
+				{
+					Name:     uuid.New().String(),
+					UUID:     uuid.New().String(),
+					Password: "tuic",
+				},
+			},
+			CongestionControl: c.SingOptions.TuicConfig.CongestionControl,
+			TLS:               &tls,
 		}
 	}
 	return in, nil

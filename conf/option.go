@@ -23,6 +23,9 @@ type XrayOptions struct {
 
 type SingOptions struct {
 	EnableProxyProtocol      bool                   `yaml:"EnableProxyProtocol"`
+	EnableDNS                bool                   `yaml:"EnableDNS"`
+	EnableTUIC               bool                   `yaml:"EnableTUIC"`
+	TuicConfig               TuicConfig             `yaml:"TuicConfig"`
 	TCPFastOpen              bool                   `yaml:"EnableTFO"`
 	SniffEnabled             bool                   `yaml:"EnableSniff"`
 	SniffOverrideDestination bool                   `yaml:"SniffOverrideDestination"`
@@ -46,4 +49,9 @@ type FallBackConfigForSing struct {
 type FallBack struct {
 	Server     string `yaml:"Server"`
 	ServerPort string `yaml:"ServerPort"`
+}
+
+type TuicConfig struct {
+	Alpn              []string `yaml:"Alpn"`
+	CongestionControl string   `yaml:"CongestionControl"`
 }

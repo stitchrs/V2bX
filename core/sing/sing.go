@@ -289,5 +289,6 @@ func (b *Box) Protocols() []string {
 		"shadowsocks",
 		"trojan",
 		"hysteria",
+		"tuic",
 	}
 }

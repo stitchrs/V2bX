@@ -228,6 +228,7 @@ func (c *Client) GetNodeInfo() (node *NodeInfo, err error) {
 	// parse protocol params
 	switch c.NodeType {
 	case "v2ray":
+	case "vless":
 		rsp := V2rayNodeRsp{}
 		err = json.Unmarshal(r.Body(), &rsp)
 		if err != nil {
@@ -238,6 +239,9 @@ func (c *Client) GetNodeInfo() (node *NodeInfo, err error) {
 		node.ServerName = rsp.ServerName
 		if rsp.Tls == 1 {
 			node.Tls = true
+		}
+		if node.ExtraConfig.EnableVless == "true" {
+			node.Type = "vless"
 		}
 		err = json.Unmarshal(rsp.NetworkSettings, &node.ExtraConfig)
 		if err != nil {
@@ -272,9 +276,7 @@ func (c *Client) GetNodeInfo() (node *NodeInfo, err error) {
 		node.UpMbps = rsp.UpMbps
 		node.HyObfs = rsp.Obfs
 	case "tuic":
-		rsp := HysteriaNodeRsp{}
-		err = json.Unmarshal(r.Body(), &rsp)
-
+		//NONE
 	}
 	c.nodeEtag = r.Header().Get("ETag")
 	return

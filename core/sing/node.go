@@ -12,7 +12,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/inazumav/sing-box/inbound"
 	"github.com/inazumav/sing-box/option"
-	dns "github.com/sagernet/sing-dns"
 	F "github.com/sagernet/sing/common/format"
 	"net/netip"
 	"net/url"
@@ -31,21 +30,7 @@ func getInboundOptions(tag string, info *panel.NodeInfo, c *conf.Options) (optio
 	if err != nil {
 		return option.Inbound{}, fmt.Errorf("the listen ip not vail")
 	}
-	var ds dns.DomainStrategy
-	switch c.SingOptions.DomainStrategy {
-	case "":
-		ds = dns.DomainStrategyAsIS
-	case "prefer_ipv4":
-		ds = dns.DomainStrategyPreferIPv4
-	case "prefer_ipv6":
-		ds = dns.DomainStrategyPreferIPv6
-	case "ipv4_only":
-		ds = dns.DomainStrategyUseIPv4
-	case "ipv6_only":
-		ds = dns.DomainStrategyUseIPv6
-	default:
-		return option.Inbound{}, fmt.Errorf("unknown domain strategy: %s", c.SingOptions.DomainStrategy)
-	}
+	ds, _ := getDomainStrategy(c.SingOptions)
 	listen := option.ListenOptions{
 		Listen:        (*option.ListenAddress)(&addr),
 		ListenPort:    uint16(info.Port),

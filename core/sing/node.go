@@ -198,6 +198,7 @@ func getInboundOptions(tag string, info *panel.NodeInfo, c *conf.Options) (optio
 			Password: randomPasswd,
 		}}
 	case "trojan":
+		in.Type = "trojan"
 		t := option.V2RayTransportOptions{
 			Type: info.Network,
 		}
@@ -210,7 +211,17 @@ func getInboundOptions(tag string, info *panel.NodeInfo, c *conf.Options) (optio
 				return option.Inbound{}, fmt.Errorf("decode NetworkSettings error: %s", err)
 			}
 		}
-		in.Type = "trojan"
+		// fallback handling
+		fallback := c.SingOptions.FallBackConfigs.FallBack
+		fallbackPort, err := strconv.Atoi(fallback.ServerPort)
+		if err != nil {
+			return option.Inbound{}, fmt.Errorf("unable to parse fallback server port error: %s", err)
+		}
+		fallbackForALPNMap := c.SingOptions.FallBackConfigs.FallBackForALPN
+		fallbackForALPN := make(map[string]*option.ServerOptions, len(fallbackForALPNMap))
+		if err := processFallback(c, fallbackForALPN); err != nil {
+			return option.Inbound{}, err
+		}
 		randomPasswd := uuid.New().String()
 		in.TrojanOptions = option.TrojanInboundOptions{
 			ListenOptions: listen,
@@ -218,8 +229,10 @@ func getInboundOptions(tag string, info *panel.NodeInfo, c *conf.Options) (optio
 				Name:     randomPasswd,
 				Password: randomPasswd,
 			}},
-			TLS:       &tls,
-			Transport: &t,
+			TLS:             &tls,
+			Transport:       &t,
+			Fallback:        &option.ServerOptions{Server: fallback.Server, ServerPort: uint16(fallbackPort)},
+			FallbackForALPN: fallbackForALPN,
 		}
 	case "tuic":
 		in.Type = "tuic"

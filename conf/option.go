@@ -52,13 +52,14 @@ type HyOptions struct {
 }
 
 type SingOptions struct {
-	EnableProxyProtocol      bool                  `yaml:"EnableProxyProtocol"`
-	EnableDNS                bool                  `yaml:"EnableDNS"`
-	EnableTUIC               bool                  `yaml:"EnableTUIC"`
-	CongestionControl        string                `yaml:"CongestionControl"`
-	DomainStrategy           string                `yaml:"DomainStrategy"`
-	TCPFastOpen              bool                  `yaml:"EnableTFO"`
-	SniffEnabled             bool                  `yaml:"EnableSniff"`
-	SniffOverrideDestination bool                  `yaml:"SniffOverrideDestination"`
-	FallBackConfigs          FallBackConfigForSing `yaml:"FallBackConfigs"`
+	EnableProxyProtocol      bool                   `yaml:"EnableProxyProtocol"`
+	EnableDNS                bool                   `yaml:"EnableDNS"`
+	EnableTUIC               bool                   `yaml:"EnableTUIC"`
+	EnableVLESS              bool                   `yaml:"EnableVLESS"`
+	CongestionControl        string                 `yaml:"CongestionControl"`
+	DomainStrategy           string                 `yaml:"DomainStrategy"`
+	TCPFastOpen              bool                   `yaml:"EnableTFO"`
+	SniffEnabled             bool                   `yaml:"EnableSniff"`
+	SniffOverrideDestination bool                   `yaml:"SniffOverrideDestination"`
+	FallBackConfigs          *FallBackConfigForSing `yaml:"FallBackConfigs"`
 }

@@ -112,9 +112,12 @@ func getInboundOptions(tag string, info *panel.NodeInfo, c *conf.Options) (optio
 	if info.Type == "hysteria" && c.SingOptions.EnableTUIC {
 		info.Type = "tuic"
 	}
+	if info.Type == "v2ray" && c.SingOptions.EnableVLESS {
+		info.Type = "vless"
+	}
 
 	switch info.Type {
-	case "v2ray":
+	case "v2ray", "vless":
 		t := option.V2RayTransportOptions{
 			Type: info.Network,
 		}
@@ -168,16 +171,26 @@ func getInboundOptions(tag string, info *panel.NodeInfo, c *conf.Options) (optio
 		}
 	case "shadowsocks":
 		in.Type = "shadowsocks"
-		p := make([]byte, 32)
-		_, _ = rand.Read(p)
-		randomPasswd := hex.EncodeToString(p)
+		var keyLength int
+		switch info.Cipher {
+		case "2022-blake3-aes-128-gcm":
+			keyLength = 16
+		case "2022-blake3-aes-256-gcm":
+			keyLength = 32
+		default:
+			keyLength = 8
+		}
 		in.ShadowsocksOptions = option.ShadowsocksInboundOptions{
 			ListenOptions: listen,
 			Method:        info.Cipher,
 		}
+		p := make([]byte, keyLength)
+		_, _ = rand.Read(p)
+		randomPasswd := hex.EncodeToString(p)
 		if strings.Contains(info.Cipher, "2022") {
+			fmt.Println(info.ServerKey)
+			in.ShadowsocksOptions.Password = info.ServerKey
 			randomPasswd = base64.StdEncoding.EncodeToString([]byte(randomPasswd))
-			in.ShadowsocksOptions.Password = randomPasswd
 		}
 		in.ShadowsocksOptions.Users = []option.ShadowsocksUser{{
 			Password: randomPasswd,
@@ -196,17 +209,6 @@ func getInboundOptions(tag string, info *panel.NodeInfo, c *conf.Options) (optio
 				return option.Inbound{}, fmt.Errorf("decode NetworkSettings error: %s", err)
 			}
 		}
-		// fallback handling
-		fallback := c.SingOptions.FallBackConfigs.FallBack
-		fallbackPort, err := strconv.Atoi(fallback.ServerPort)
-		if err != nil {
-			return option.Inbound{}, fmt.Errorf("unable to parse fallback server port error: %s", err)
-		}
-		fallbackForALPNMap := c.SingOptions.FallBackConfigs.FallBackForALPN
-		fallbackForALPN := make(map[string]*option.ServerOptions, len(fallbackForALPNMap))
-		if err := processFallback(c, fallbackForALPN); err != nil {
-			return option.Inbound{}, err
-		}
 		randomPasswd := uuid.New().String()
 		in.TrojanOptions = option.TrojanInboundOptions{
 			ListenOptions: listen,
@@ -214,10 +216,28 @@ func getInboundOptions(tag string, info *panel.NodeInfo, c *conf.Options) (optio
 				Name:     randomPasswd,
 				Password: randomPasswd,
 			}},
-			TLS:             &tls,
-			Transport:       &t,
-			Fallback:        &option.ServerOptions{Server: fallback.Server, ServerPort: uint16(fallbackPort)},
-			FallbackForALPN: fallbackForALPN,
+			TLS:       &tls,
+			Transport: &t,
+		}
+		if c.SingOptions.FallBackConfigs != nil {
+			// fallback handling
+			fallback := c.SingOptions.FallBackConfigs.FallBack
+			fallbackPort, err := strconv.Atoi(fallback.ServerPort)
+			if err != nil {
+				in.TrojanOptions.Fallback = nil
+			} else {
+				in.TrojanOptions.Fallback = &option.ServerOptions{
+					Server:     fallback.Server,
+					ServerPort: uint16(fallbackPort),
+				}
+			}
+			fallbackForALPNMap := c.SingOptions.FallBackConfigs.FallBackForALPN
+			fallbackForALPN := make(map[string]*option.ServerOptions, len(fallbackForALPNMap))
+			if err := processFallback(c, fallbackForALPN); err != nil {
+				in.TrojanOptions.FallbackForALPN = nil
+			} else {
+				in.TrojanOptions.FallbackForALPN = fallbackForALPN
+			}
 		}
 	case "tuic":
 		in.Type = "tuic"

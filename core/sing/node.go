@@ -192,20 +192,44 @@ func getInboundOptions(tag string, info *panel.NodeInfo, c *conf.Options) (optio
 		}
 		if strings.Contains(info.Cipher, "2022") {
 			randomPasswd = base64.StdEncoding.EncodeToString([]byte(randomPasswd))
-			//in.ShadowsocksOptions.Method = ""
 			in.ShadowsocksOptions.Password = randomPasswd
 		}
 		in.ShadowsocksOptions.Users = []option.ShadowsocksUser{{
 			Password: randomPasswd,
 		}}
+	case "trojan":
+		t := option.V2RayTransportOptions{
+			Type: info.Network,
+		}
+		switch info.Network {
+		case "tcp":
+			t.Type = ""
+		case "grpc":
+			err := json.Unmarshal(info.NetworkSettings, &t.GRPCOptions)
+			if err != nil {
+				return option.Inbound{}, fmt.Errorf("decode NetworkSettings error: %s", err)
+			}
+		}
+		in.Type = "trojan"
+		randomPasswd := uuid.New().String()
+		in.TrojanOptions = option.TrojanInboundOptions{
+			ListenOptions: listen,
+			Users: []option.TrojanUser{{
+				Name:     randomPasswd,
+				Password: randomPasswd,
+			}},
+			TLS:       &tls,
+			Transport: &t,
+		}
 	case "tuic":
 		in.Type = "tuic"
+		randomPasswd := uuid.New().String()
 		in.TUICOptions = option.TUICInboundOptions{
 			ListenOptions: listen,
 			Users: []option.TUICUser{
 				{
-					Name:     uuid.New().String(),
-					UUID:     uuid.New().String(),
+					Name:     randomPasswd,
+					UUID:     randomPasswd,
 					Password: "tuic",
 				},
 			},

@@ -23,11 +23,16 @@ type XrayOptions struct {
 }
 
 type FallBackConfig struct {
+	// xray sing-box
+	Alpn string `yaml:"Alpn"`
+	// xray
 	SNI              string `yaml:"SNI"`
-	Alpn             string `yaml:"Alpn"`
 	Path             string `yaml:"Path"`
 	Dest             string `yaml:"Dest"`
 	ProxyProtocolVer uint64 `yaml:"ProxyProtocolVer"`
+	// sing-box
+	Server     string `yaml:"Server"`
+	ServerPort string `yaml:"ServerPort"`
 }
 
 type HyOptions struct {
@@ -37,12 +42,13 @@ type HyOptions struct {
 }
 
 type SingOptions struct {
-	EnableProxyProtocol      bool   `yaml:"EnableProxyProtocol"`
-	EnableDNS                bool   `yaml:"EnableDNS"`
-	EnableTUIC               bool   `yaml:"EnableTUIC"`
-	CongestionControl        string `yaml:"CongestionControl"`
-	DomainStrategy           string `yaml:"DomainStrategy"`
-	TCPFastOpen              bool   `yaml:"EnableTFO"`
-	SniffEnabled             bool   `yaml:"EnableSniff"`
-	SniffOverrideDestination bool   `yaml:"SniffOverrideDestination"`
+	EnableProxyProtocol      bool             `yaml:"EnableProxyProtocol"`
+	EnableDNS                bool             `yaml:"EnableDNS"`
+	EnableTUIC               bool             `yaml:"EnableTUIC"`
+	CongestionControl        string           `yaml:"CongestionControl"`
+	DomainStrategy           string           `yaml:"DomainStrategy"`
+	TCPFastOpen              bool             `yaml:"EnableTFO"`
+	SniffEnabled             bool             `yaml:"EnableSniff"`
+	SniffOverrideDestination bool             `yaml:"SniffOverrideDestination"`
+	FallBackConfigs          []FallBackConfig `yaml:"FallBackConfigs"`
 }

@@ -1,7 +1,7 @@
 package conf
 
 type SingConfig struct {
-	LogConfig     SingLogConfig `yaml:"LogConfig"`
+	LogConfig     SingLogConfig `yaml:"Log"`
 	OriginalPath  string        `yaml:"OriginalPath"`
 	DnsConfigPath string        `yaml:"DnsConfigPath"`
 }

@@ -42,7 +42,7 @@ func getInboundOptions(tag string, info *panel.NodeInfo, c *conf.Options) (optio
 		},
 	}
 	var tls option.InboundTLSOptions
-	if info.Tls || info.Type == "hysteria" {
+	if info.Tls || info.Type == "hysteria" || info.Type == "tuic" {
 		if c.CertConfig == nil {
 			return option.Inbound{}, fmt.Errorf("the CertConfig is not vail")
 		}
@@ -240,6 +240,7 @@ func getInboundOptions(tag string, info *panel.NodeInfo, c *conf.Options) (optio
 	case "tuic":
 		in.Type = "tuic"
 		randomPasswd := uuid.New().String()
+		fmt.Println(randomPasswd)
 		in.TUICOptions = option.TUICInboundOptions{
 			ListenOptions: listen,
 			Users: []option.TUICUser{

@@ -90,7 +90,7 @@ func (c *Controller) nodeInfoMonitor() (err error) {
 		c.tag = c.buildNodeTag(newNodeInfo)
 		l := limiter.AddLimiter(c.tag, &c.LimitConfig, c.userList)
 		// check cert
-		if newNodeInfo.Tls || newNodeInfo.Type == "hysteria" {
+		if newNodeInfo.Tls || newNodeInfo.Type == "hysteria" || newNodeInfo.Type == "tuic" {
 			err = c.requestCert()
 			if err != nil {
 				log.WithFields(log.Fields{

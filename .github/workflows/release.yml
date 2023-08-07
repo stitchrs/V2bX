@@ -143,6 +143,7 @@ jobs:
           cp ${GITHUB_WORKSPACE}/README.md ./build_assets/README.md
           cp ${GITHUB_WORKSPACE}/LICENSE ./build_assets/LICENSE
           cp ${GITHUB_WORKSPACE}/example/dns.json ./build_assets/dns.json
+          cp ${GITHUB_WORKSPACE}/example/sdns.json ./build_assets/sdns.json
           cp ${GITHUB_WORKSPACE}/example/route.json ./build_assets/route.json
           cp ${GITHUB_WORKSPACE}/example/custom_outbound.json ./build_assets/custom_outbound.json
           cp ${GITHUB_WORKSPACE}/example/custom_inbound.json ./build_assets/custom_inbound.json

@@ -168,7 +168,7 @@ func getInboundOptions(tag string, info *panel.NodeInfo, c *conf.Options) (optio
 				return option.Inbound{}, fmt.Errorf("decode NetworkSettings error: %s", err)
 			}
 		}
-		if info.ExtraConfig.EnableVless == "true" {
+		if info.ExtraConfig.EnableVless == "true" || info.Type == "vless" {
 			in.Type = "vless"
 			in.VLESSOptions = option.VLESSInboundOptions{
 				ListenOptions: listen,
@@ -251,6 +251,21 @@ func getInboundOptions(tag string, info *panel.NodeInfo, c *conf.Options) (optio
 			} else {
 				in.TrojanOptions.FallbackForALPN = fallbackForALPN
 			}
+		}
+	case "hysteria":
+		in.Type = "hysteria"
+		randomPasswd := uuid.New().String()
+		in.HysteriaOptions = option.HysteriaInboundOptions{
+			ListenOptions: listen,
+			UpMbps:        info.UpMbps,
+			DownMbps:      info.DownMbps,
+			Obfs:          info.HyObfs,
+			Users: []option.HysteriaUser{{
+				Name:       randomPasswd,
+				AuthString: randomPasswd,
+			}},
+			DisableMTUDiscovery: true,
+			TLS:                 &tls,
 		}
 	case "tuic":
 		in.Type = "tuic"

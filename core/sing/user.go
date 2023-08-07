@@ -68,6 +68,15 @@ func (b *Box) AddUsers(p *core.AddUsersParams) (added int, err error) {
 			}
 		}
 		err = b.inbounds[p.Tag].(*inbound.Trojan).AddUsers(us)
+	case "hysteria":
+		us := make([]option.HysteriaUser, len(p.UserInfo))
+		for i := range p.UserInfo {
+			us[i] = option.HysteriaUser{
+				Name:       p.UserInfo[i].Uuid,
+				AuthString: p.UserInfo[i].Uuid,
+			}
+		}
+		err = b.inbounds[p.Tag].(*inbound.Hysteria).AddUsers(us)
 	case "tuic":
 		us := make([]option.TUICUser, len(p.UserInfo))
 		for i := range p.UserInfo {

@@ -4,7 +4,6 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/base64"
-	"encoding/hex"
 	"fmt"
 	"github.com/InazumaV/V2bX/api/panel"
 	"github.com/InazumaV/V2bX/conf"
@@ -201,7 +200,7 @@ func getInboundOptions(tag string, info *panel.NodeInfo, c *conf.Options) (optio
 		}
 		p := make([]byte, keyLength)
 		_, _ = rand.Read(p)
-		randomPasswd := hex.EncodeToString(p)
+		randomPasswd := string(p)
 		if strings.Contains(info.Cipher, "2022") {
 			fmt.Println(info.ServerKey)
 			in.ShadowsocksOptions.Password = info.ServerKey

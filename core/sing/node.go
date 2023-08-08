@@ -5,18 +5,20 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"fmt"
-	"github.com/InazumaV/V2bX/api/panel"
-	"github.com/InazumaV/V2bX/conf"
-	"github.com/goccy/go-json"
 	"github.com/google/uuid"
-	"github.com/inazumav/sing-box/inbound"
-	"github.com/inazumav/sing-box/option"
-	F "github.com/sagernet/sing/common/format"
 	"net/netip"
 	"net/url"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/inazumav/sing-box/inbound"
+	F "github.com/sagernet/sing/common/format"
+
+	"github.com/InazumaV/V2bX/api/panel"
+	"github.com/InazumaV/V2bX/conf"
+	"github.com/goccy/go-json"
+	"github.com/inazumav/sing-box/option"
 )
 
 type WsNetworkConfig struct {
@@ -189,6 +191,7 @@ func getInboundOptions(tag string, info *panel.NodeInfo, c *conf.Options) (optio
 		if strings.Contains(info.Cipher, "2022") {
 			fmt.Println(info.ServerKey)
 			in.ShadowsocksOptions.Password = info.ServerKey
+			randomPasswd = base64.StdEncoding.EncodeToString([]byte(randomPasswd))
 		}
 		in.ShadowsocksOptions.Users = []option.ShadowsocksUser{{
 			Password: base64.StdEncoding.EncodeToString([]byte(randomPasswd)),
@@ -221,9 +224,7 @@ func getInboundOptions(tag string, info *panel.NodeInfo, c *conf.Options) (optio
 			// fallback handling
 			fallback := c.SingOptions.FallBackConfigs.FallBack
 			fallbackPort, err := strconv.Atoi(fallback.ServerPort)
-			if err != nil {
-				in.TrojanOptions.Fallback = nil
-			} else {
+			if err == nil {
 				in.TrojanOptions.Fallback = &option.ServerOptions{
 					Server:     fallback.Server,
 					ServerPort: uint16(fallbackPort),
@@ -231,9 +232,7 @@ func getInboundOptions(tag string, info *panel.NodeInfo, c *conf.Options) (optio
 			}
 			fallbackForALPNMap := c.SingOptions.FallBackConfigs.FallBackForALPN
 			fallbackForALPN := make(map[string]*option.ServerOptions, len(fallbackForALPNMap))
-			if err := processFallback(c, fallbackForALPN); err != nil {
-				in.TrojanOptions.FallbackForALPN = nil
-			} else {
+			if err := processFallback(c, fallbackForALPN); err == nil {
 				in.TrojanOptions.FallbackForALPN = fallbackForALPN
 			}
 		}

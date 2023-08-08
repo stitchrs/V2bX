@@ -95,7 +95,7 @@ func (b *Box) AddUsers(p *core.AddUsersParams) (added int, err error) {
 }
 
 func (b *Box) GetUserTraffic(tag, uuid string, reset bool) (up int64, down int64) {
-	if v, ok := b.hookServer.Hooker().counter.Load(tag); ok {
+	if v, ok := b.hookServer.counter.Load(tag); ok {
 		c := v.(*counter.TrafficCounter)
 		up = c.GetUpCount(uuid)
 		down = c.GetDownCount(uuid)
@@ -123,6 +123,10 @@ func (b *Box) DelUsers(users []panel.UserInfo, tag string) error {
 			del = i.(*inbound.ShadowsocksMulti)
 		case "tuic":
 			del = i.(*inbound.TUIC)
+		case "trojan":
+			del = i.(*inbound.Trojan)
+		case "hysteria":
+			del = i.(*inbound.Hysteria)
 		}
 	} else {
 		return errors.New("the inbound not found")

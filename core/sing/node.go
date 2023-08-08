@@ -5,19 +5,19 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"fmt"
-	"github.com/InazumaV/V2bX/api/panel"
-	"github.com/InazumaV/V2bX/conf"
-	"github.com/goccy/go-json"
 	"github.com/google/uuid"
-	"github.com/inazumav/sing-box/inbound"
-	"github.com/inazumav/sing-box/option"
-	dns "github.com/sagernet/sing-dns"
-	F "github.com/sagernet/sing/common/format"
 	"net/netip"
 	"net/url"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/InazumaV/V2bX/api/panel"
+	"github.com/InazumaV/V2bX/conf"
+	"github.com/goccy/go-json"
+	"github.com/inazumav/sing-box/inbound"
+	"github.com/inazumav/sing-box/option"
+	F "github.com/sagernet/sing/common/format"
 )
 
 type WsNetworkConfig struct {
@@ -30,21 +30,7 @@ func getInboundOptions(tag string, info *panel.NodeInfo, c *conf.Options) (optio
 	if err != nil {
 		return option.Inbound{}, fmt.Errorf("the listen ip not vail")
 	}
-	var ds dns.DomainStrategy
-	switch c.SingOptions.DomainStrategy {
-	case "":
-		ds = dns.DomainStrategyAsIS
-	case "prefer_ipv4":
-		ds = dns.DomainStrategyPreferIPv4
-	case "prefer_ipv6":
-		ds = dns.DomainStrategyPreferIPv6
-	case "ipv4_only":
-		ds = dns.DomainStrategyUseIPv4
-	case "ipv6_only":
-		ds = dns.DomainStrategyUseIPv6
-	default:
-		return option.Inbound{}, fmt.Errorf("unknown domain strategy: %s", c.SingOptions.DomainStrategy)
-	}
+	ds, _ := getDomainStrategy(c.SingOptions)
 	listen := option.ListenOptions{
 		Listen:        (*option.ListenAddress)(&addr),
 		ListenPort:    uint16(info.Port),
@@ -204,6 +190,7 @@ func getInboundOptions(tag string, info *panel.NodeInfo, c *conf.Options) (optio
 		if strings.Contains(info.Cipher, "2022") {
 			fmt.Println(info.ServerKey)
 			in.ShadowsocksOptions.Password = info.ServerKey
+			randomPasswd = base64.StdEncoding.EncodeToString([]byte(randomPasswd))
 		}
 		in.ShadowsocksOptions.Users = []option.ShadowsocksUser{{
 			Password: base64.StdEncoding.EncodeToString([]byte(randomPasswd)),
@@ -236,9 +223,7 @@ func getInboundOptions(tag string, info *panel.NodeInfo, c *conf.Options) (optio
 			// fallback handling
 			fallback := c.SingOptions.FallBackConfigs.FallBack
 			fallbackPort, err := strconv.Atoi(fallback.ServerPort)
-			if err != nil {
-				in.TrojanOptions.Fallback = nil
-			} else {
+			if err == nil {
 				in.TrojanOptions.Fallback = &option.ServerOptions{
 					Server:     fallback.Server,
 					ServerPort: uint16(fallbackPort),
@@ -246,9 +231,7 @@ func getInboundOptions(tag string, info *panel.NodeInfo, c *conf.Options) (optio
 			}
 			fallbackForALPNMap := c.SingOptions.FallBackConfigs.FallBackForALPN
 			fallbackForALPN := make(map[string]*option.ServerOptions, len(fallbackForALPNMap))
-			if err := processFallback(c, fallbackForALPN); err != nil {
-				in.TrojanOptions.FallbackForALPN = nil
-			} else {
+			if err := processFallback(c, fallbackForALPN); err == nil {
 				in.TrojanOptions.FallbackForALPN = fallbackForALPN
 			}
 		}
@@ -270,6 +253,7 @@ func getInboundOptions(tag string, info *panel.NodeInfo, c *conf.Options) (optio
 	case "tuic":
 		in.Type = "tuic"
 		randomPasswd := uuid.New().String()
+		tls.ALPN = []string{"h3"}
 		in.TUICOptions = option.TUICInboundOptions{
 			ListenOptions: listen,
 			Users: []option.TUICUser{
@@ -279,7 +263,7 @@ func getInboundOptions(tag string, info *panel.NodeInfo, c *conf.Options) (optio
 					Password: "tuic",
 				},
 			},
-			CongestionControl: c.SingOptions.CongestionControl,
+			CongestionControl: c.SingOptions.TuicConfig.CongestionControl,
 			TLS:               &tls,
 		}
 	}

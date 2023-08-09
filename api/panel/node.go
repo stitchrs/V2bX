@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/base64"
 	"fmt"
-	coreConf "github.com/xtls/xray-core/infra/conf"
 	"os"
 	"reflect"
 	"strconv"
@@ -305,17 +304,6 @@ func saveDnsConfig(dns []byte, dnsPath string) {
 		return
 	}
 	if !bytes.Equal(currentData, dns) {
-		if os.Getenv("CORE_RUNNING") == "XRAY" {
-			coreDnsConfig := &coreConf.DNSConfig{}
-			if err = json.NewDecoder(bytes.NewReader(dns)).Decode(coreDnsConfig); err != nil {
-				log.WithField("err", err).Error("Failed to unmarshal DNS config")
-			}
-			_, err := coreDnsConfig.Build()
-			if err != nil {
-				log.WithField("err", err).Error("Failed to understand DNS config, Please check: https://xtls.github.io/config/dns.html for help")
-				return
-			}
-		}
 		if err = os.Truncate(dnsPath, 0); err != nil {
 			log.WithField("err", err).Error("Failed to clear XRAY DNS PATH file")
 		}

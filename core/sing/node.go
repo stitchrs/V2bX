@@ -37,9 +37,11 @@ func getInboundOptions(tag string, info *panel.NodeInfo, c *conf.Options) (optio
 		ListenPort:    uint16(info.Port),
 		ProxyProtocol: c.SingOptions.EnableProxyProtocol,
 		TCPFastOpen:   c.SingOptions.TCPFastOpen,
+		TCPMultiPath:  c.SingOptions.TCPMultiPath,
 		InboundOptions: option.InboundOptions{
 			SniffEnabled:             c.SingOptions.SniffEnabled,
 			SniffOverrideDestination: c.SingOptions.SniffOverrideDestination,
+			SniffOverrideFallback:    c.SingOptions.SniffOverrideFallback,
 			DomainStrategy:           option.DomainStrategy(ds),
 		},
 	}

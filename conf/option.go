@@ -29,13 +29,14 @@ type SingOptions struct {
 	CongestionControl        string                 `yaml:"CongestionControl"`
 	DomainStrategy           string                 `yaml:"DomainStrategy"`
 	TCPFastOpen              bool                   `yaml:"EnableTFO"`
+	TCPMultiPath             bool                   `yaml:"EnableTMP"`
 	SniffEnabled             bool                   `yaml:"EnableSniff"`
+	SniffOverrideFallback    bool                   `yaml:"SniffOverrideFallback"`
 	SniffOverrideDestination bool                   `yaml:"SniffOverrideDestination"`
 	FallBackConfigs          *FallBackConfigForSing `yaml:"FallBackConfigs"`
 }
 
 type FallBackConfigForXray struct {
-	// xray sing-box
 	Alpn             string `yaml:"Alpn"`
 	SNI              string `yaml:"SNI"`
 	Path             string `yaml:"Path"`

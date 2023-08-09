@@ -1,6 +1,6 @@
 module github.com/InazumaV/V2bX
 
-go 1.19
+go 1.21
 
 require (
 	github.com/beevik/ntp v1.2.0
@@ -220,4 +220,4 @@ require (
 
 exclude gvisor.dev/gvisor v0.0.0-20230313184804-9bf6dd27710d
 
-replace github.com/inazumav/sing-box v0.0.0-20230809093045-c5fd24fc8b60 => github.com/stitchrs/sing-box-inazumav v0.0.0-20230809101604-b965abe67f7e
+replace github.com/inazumav/sing-box v0.0.0-20230809113805-82b279719f5f => github.com/stitchrs/sing-box-inazumav v0.0.0-20230809121247-e23a9e4d7662

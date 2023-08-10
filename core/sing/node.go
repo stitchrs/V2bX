@@ -256,7 +256,7 @@ func getInboundOptions(tag string, info *panel.NodeInfo, c *conf.Options) (optio
 	case "tuic":
 		in.Type = "tuic"
 		randomPasswd := uuid.New().String()
-		fmt.Println(randomPasswd)
+		tls.ALPN = c.SingOptions.TuicConfig.Alpn
 		in.TUICOptions = option.TUICInboundOptions{
 			ListenOptions: listen,
 			Users: []option.TUICUser{
@@ -266,7 +266,7 @@ func getInboundOptions(tag string, info *panel.NodeInfo, c *conf.Options) (optio
 					Password: "tuic",
 				},
 			},
-			CongestionControl: c.SingOptions.CongestionControl,
+			CongestionControl: c.SingOptions.TuicConfig.CongestionControl,
 			TLS:               &tls,
 		}
 	}

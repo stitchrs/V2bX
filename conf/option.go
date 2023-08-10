@@ -25,8 +25,8 @@ type SingOptions struct {
 	EnableProxyProtocol      bool                   `yaml:"EnableProxyProtocol"`
 	EnableDNS                bool                   `yaml:"EnableDNS"`
 	EnableTUIC               bool                   `yaml:"EnableTUIC"`
+	TuicConfig               TuicConfig             `yaml:"TuicConfig"`
 	EnableVLESS              bool                   `yaml:"EnableVLESS"`
-	CongestionControl        string                 `yaml:"CongestionControl"`
 	DomainStrategy           string                 `yaml:"DomainStrategy"`
 	TCPFastOpen              bool                   `yaml:"EnableTFO"`
 	TCPMultiPath             bool                   `yaml:"EnableTMP"`
@@ -34,6 +34,11 @@ type SingOptions struct {
 	SniffOverrideFallback    bool                   `yaml:"SniffOverrideFallback"`
 	SniffOverrideDestination bool                   `yaml:"SniffOverrideDestination"`
 	FallBackConfigs          *FallBackConfigForSing `yaml:"FallBackConfigs"`
+}
+
+type TuicConfig struct {
+	Alpn              []string `yaml:"Alpn"`
+	CongestionControl string   `yaml:"CongestionControl"`
 }
 
 type FallBackConfigForXray struct {

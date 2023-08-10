@@ -12,12 +12,13 @@ import (
 	"strings"
 	"time"
 
+	"github.com/inazumav/sing-box/inbound"
+	F "github.com/sagernet/sing/common/format"
+
 	"github.com/InazumaV/V2bX/api/panel"
 	"github.com/InazumaV/V2bX/conf"
 	"github.com/goccy/go-json"
-	"github.com/inazumav/sing-box/inbound"
 	"github.com/inazumav/sing-box/option"
-	F "github.com/sagernet/sing/common/format"
 )
 
 type WsNetworkConfig struct {
@@ -255,7 +256,7 @@ func getInboundOptions(tag string, info *panel.NodeInfo, c *conf.Options) (optio
 	case "tuic":
 		in.Type = "tuic"
 		randomPasswd := uuid.New().String()
-		tls.ALPN = []string{"h3"}
+		tls.ALPN = c.SingOptions.TuicConfig.Alpn
 		in.TUICOptions = option.TUICInboundOptions{
 			ListenOptions: listen,
 			Users: []option.TUICUser{

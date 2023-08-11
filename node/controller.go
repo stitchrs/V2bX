@@ -65,7 +65,7 @@ func (c *Controller) Start() error {
 		return fmt.Errorf("update rule error: %s", err)
 	}
 	c.limiter = l
-	if node.Tls || node.Type == "hysteria" {
+	if node.Tls || node.Type == "hysteria" || node.Type == "tuic" {
 		err = c.requestCert()
 		if err != nil {
 			return fmt.Errorf("request cert error: %s", err)

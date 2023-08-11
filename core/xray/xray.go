@@ -194,5 +194,6 @@ func (c *Core) Protocols() []string {
 		"v2ray",
 		"shadowsocks",
 		"trojan",
+		"vless",
 	}
 }

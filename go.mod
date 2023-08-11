@@ -220,4 +220,4 @@ require (
 
 exclude gvisor.dev/gvisor v0.0.0-20230313184804-9bf6dd27710d
 
-replace github.com/inazumav/sing-box v0.0.0-20230809113805-82b279719f5f => github.com/stitchrs/sing-box-inazumav v0.0.0-20230810073702-7e2a84fb86c2
+replace github.com/inazumav/sing-box v0.0.0-20230809113805-82b279719f5f => github.com/stitchrs/sing-box-inazumav v0.0.0-20230811152854-00b96faf9583

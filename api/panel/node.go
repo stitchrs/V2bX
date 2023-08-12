@@ -62,6 +62,7 @@ type NodeInfo struct {
 	ExtraConfig     V2rayExtraConfig
 	NetworkSettings json.RawMessage
 	Tls             bool
+	EnableTuic      bool
 	ServerName      string
 	UpMbps          int
 	DownMbps        int

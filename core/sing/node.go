@@ -79,7 +79,6 @@ func getInboundOptions(tag string, info *panel.NodeInfo, c *conf.Options) (optio
 					},
 				},
 			}
-
 		case "remote":
 			if info.ExtraConfig.EnableReality == "true" {
 				if c.CertConfig.RealityConfig == nil {
@@ -111,12 +110,6 @@ func getInboundOptions(tag string, info *panel.NodeInfo, c *conf.Options) (optio
 	}
 	in := option.Inbound{
 		Tag: tag,
-	}
-	if info.Type == "hysteria" && c.SingOptions.EnableTUIC {
-		info.Type = "tuic"
-	}
-	if info.Type == "v2ray" && c.SingOptions.EnableVLESS {
-		info.Type = "vless"
 	}
 
 	switch info.Type {
@@ -239,19 +232,31 @@ func getInboundOptions(tag string, info *panel.NodeInfo, c *conf.Options) (optio
 			}
 		}
 	case "hysteria":
-		in.Type = "hysteria"
-		randomPasswd := uuid.New().String()
-		in.HysteriaOptions = option.HysteriaInboundOptions{
-			ListenOptions: listen,
-			UpMbps:        info.UpMbps,
-			DownMbps:      info.DownMbps,
-			Obfs:          info.HyObfs,
-			Users: []option.HysteriaUser{{
-				Name:       randomPasswd,
-				AuthString: randomPasswd,
-			}},
-			DisableMTUDiscovery: true,
-			TLS:                 &tls,
+		if c.SingOptions.EnableTUIC {
+			in.Type = "tuic"
+			info.EnableTuic = true
+			tls.ALPN = c.SingOptions.TuicConfig.Alpn
+			in.TUICOptions = option.TUICInboundOptions{
+				ListenOptions: listen,
+				Users: []option.TUICUser{
+					{
+						Name:     uuid.New().String(),
+						UUID:     uuid.New().String(),
+						Password: "tuic",
+					},
+				},
+				CongestionControl: c.SingOptions.TuicConfig.CongestionControl,
+				TLS:               &tls,
+			}
+		} else {
+			in.Type = "hysteria"
+			in.HysteriaOptions = option.HysteriaInboundOptions{
+				ListenOptions: listen,
+				UpMbps:        info.UpMbps,
+				DownMbps:      info.DownMbps,
+				Obfs:          info.HyObfs,
+				TLS:           &tls,
+			}
 		}
 	case "tuic":
 		in.Type = "tuic"

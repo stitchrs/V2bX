@@ -58,14 +58,26 @@ func (b *Box) AddUsers(p *core.AddUsersParams) (added int, err error) {
 		}
 		err = b.inbounds[p.Tag].(*inbound.Trojan).AddUsers(us)
 	case "hysteria":
-		us := make([]option.HysteriaUser, len(p.UserInfo))
-		for i := range p.UserInfo {
-			us[i] = option.HysteriaUser{
-				Name:       p.UserInfo[i].Uuid,
-				AuthString: p.UserInfo[i].Uuid,
+		if p.NodeInfo.EnableTuic {
+			us := make([]option.TUICUser, len(p.UserInfo))
+			for i := range p.UserInfo {
+				us[i] = option.TUICUser{
+					Name:     p.UserInfo[i].Uuid,
+					UUID:     p.UserInfo[i].Uuid,
+					Password: "tuic",
+				}
 			}
+			err = b.inbounds[p.Tag].(*inbound.TUIC).AddUsers(us)
+		} else {
+			us := make([]option.HysteriaUser, len(p.UserInfo))
+			for i := range p.UserInfo {
+				us[i] = option.HysteriaUser{
+					Name:       p.UserInfo[i].Uuid,
+					AuthString: p.UserInfo[i].Uuid,
+				}
+			}
+			err = b.inbounds[p.Tag].(*inbound.Hysteria).AddUsers(us)
 		}
-		err = b.inbounds[p.Tag].(*inbound.Hysteria).AddUsers(us)
 	case "tuic":
 		us := make([]option.TUICUser, len(p.UserInfo))
 		for i := range p.UserInfo {

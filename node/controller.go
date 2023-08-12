@@ -45,9 +45,6 @@ func (c *Controller) Start() error {
 	// First fetch Node Info
 	var err error
 	node, err := c.apiClient.GetNodeInfo()
-	if c.SingOptions.EnableTUIC && node.Type == "hysteria" {
-		node.Type = "tuic"
-	}
 	if err != nil {
 		return fmt.Errorf("get node info error: %s", err)
 	}

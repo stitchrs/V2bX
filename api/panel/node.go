@@ -140,7 +140,7 @@ func (c *Client) GetNodeInfo() (node *NodeInfo, err error) {
 			Servers: []map[string]string{
 				{
 					"tag":     "default",
-					"address": "https://8.8.8.8/dns-query",
+					"address": "1.1.1.1",
 					"detour":  "direct",
 				},
 			},

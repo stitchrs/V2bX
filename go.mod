@@ -221,3 +221,7 @@ require (
 exclude gvisor.dev/gvisor v0.0.0-20230313184804-9bf6dd27710d
 
 replace github.com/inazumav/sing-box v0.0.0-20230809113805-82b279719f5f => github.com/stitchrs/sing-box-inazumav v0.0.0-20230811152854-00b96faf9583
+
+replace github.com/sagernet/sing-vmess v0.1.7 => github.com/inazumav/sing-vmess v0.0.0-20230814021806-b8bb0c6bdd29
+
+replace github.com/sagernet/sing-shadowsocks v0.2.4 => github.com/stitchrs/sing-shadowsocks v0.0.0-20230815143541-01690b76214b

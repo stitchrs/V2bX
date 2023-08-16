@@ -13,15 +13,26 @@ import (
 func (b *Box) AddUsers(p *core.AddUsersParams) (added int, err error) {
 	switch p.NodeInfo.Type {
 	case "v2ray":
-		us := make([]option.VMessUser, len(p.UserInfo))
-		for i := range p.UserInfo {
-			us[i] = option.VMessUser{
-				Name: p.UserInfo[i].Uuid,
-				UUID: p.UserInfo[i].Uuid,
+		if p.NodeInfo.ExtraConfig.EnableVless == "true" {
+			us := make([]option.VLESSUser, len(p.UserInfo))
+			for i := range p.UserInfo {
+				us[i] = option.VLESSUser{
+					Name: p.UserInfo[i].Uuid,
+					UUID: p.UserInfo[i].Uuid,
+					Flow: p.NodeInfo.ExtraConfig.VlessFlow,
+				}
 			}
+			err = b.inbounds[p.Tag].(*inbound.VLESS).AddUsers(us)
+		} else {
+			us := make([]option.VMessUser, len(p.UserInfo))
+			for i := range p.UserInfo {
+				us[i] = option.VMessUser{
+					Name: p.UserInfo[i].Uuid,
+					UUID: p.UserInfo[i].Uuid,
+				}
+			}
+			err = b.inbounds[p.Tag].(*inbound.VMess).AddUsers(us)
 		}
-		err = b.inbounds[p.Tag].(*inbound.VMess).AddUsers(us)
-
 	case "vless":
 		us := make([]option.VLESSUser, len(p.UserInfo))
 		for i := range p.UserInfo {

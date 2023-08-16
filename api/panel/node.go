@@ -140,7 +140,7 @@ func (c *Client) GetNodeInfo() (node *NodeInfo, err error) {
 			Servers: []map[string]string{
 				{
 					"tag":     "default",
-					"address": "1.1.1.1",
+					"address": "local",
 					"detour":  "direct",
 				},
 			},
@@ -242,9 +242,6 @@ func (c *Client) GetNodeInfo() (node *NodeInfo, err error) {
 		err = json.Unmarshal(rsp.NetworkSettings, &node.ExtraConfig)
 		if err != nil {
 			return nil, fmt.Errorf("decode v2ray extra error: %s", err)
-		}
-		if node.ExtraConfig.EnableVless == "true" {
-			node.Type = "vless"
 		}
 		if node.ExtraConfig.EnableReality == "true" {
 			if node.ExtraConfig.RealityConfig == nil {

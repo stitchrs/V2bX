@@ -53,7 +53,15 @@ func New(c *conf.CoreConfig) (vCore.Core, error) {
 	options.DNS = &option.DNSOptions{}
 	os.Setenv("CORE_RUNNING", "")
 	os.Setenv("SING_DNS_PATH", "")
-
+	options.NTP = &option.NTPOptions{
+		Enabled:       sc.NtpConfig.Enable,
+		Interval:      sc.NtpConfig.Interval,
+		WriteToSystem: true,
+		ServerOptions: option.ServerOptions{
+			Server:     sc.NtpConfig.Server,
+			ServerPort: uint16(sc.NtpConfig.ServerPort),
+		},
+	}
 	if sc.DnsConfigPath != "" {
 		if f, err := os.Open(sc.DnsConfigPath); err != nil {
 			panic("Failed to read DNS config file")

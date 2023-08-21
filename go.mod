@@ -15,7 +15,7 @@ require (
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/inazumav/sing-box v0.0.0-20230809113805-82b279719f5f
 	github.com/juju/ratelimit v1.0.2
-	github.com/sagernet/sing v0.2.10-0.20230807080248-4db0062caa0a
+	github.com/sagernet/sing v0.2.10-0.20230821073500-620f3a3b882d
 	github.com/sagernet/sing-dns v0.1.9-0.20230731012726-ad50da89b659
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/cobra v1.7.0
@@ -77,7 +77,7 @@ require (
 	github.com/ghodss/yaml v1.0.1-0.20220118164431-d8423dcdf344 // indirect
 	github.com/go-errors/errors v1.0.1 // indirect
 	github.com/go-jose/go-jose/v3 v3.0.0 // indirect
-	github.com/go-ole/go-ole v1.2.6 // indirect
+	github.com/go-ole/go-ole v1.3.0 // indirect
 	github.com/go-task/slim-sprig v0.0.0-20230315185526-52ccab3ef572 // indirect
 	github.com/gofrs/uuid/v5 v5.0.0 // indirect
 	github.com/golang-jwt/jwt/v4 v4.5.0 // indirect
@@ -136,7 +136,7 @@ require (
 	github.com/onsi/ginkgo/v2 v2.11.0 // indirect
 	github.com/ooni/go-libtor v1.1.8 // indirect
 	github.com/oracle/oci-go-sdk v24.3.0+incompatible // indirect
-	github.com/oschwald/maxminddb-golang v1.11.0 // indirect
+	github.com/oschwald/maxminddb-golang v1.12.0 // indirect
 	github.com/ovh/go-ovh v1.4.1 // indirect
 	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect
 	github.com/pires/go-proxyproto v0.7.0 // indirect
@@ -156,19 +156,19 @@ require (
 	github.com/sagernet/go-tun2socks v1.16.12-0.20220818015926-16cb67876a61 // indirect
 	github.com/sagernet/gvisor v0.0.0-20230627031050-1ab0276e0dd2 // indirect
 	github.com/sagernet/netlink v0.0.0-20220905062125-8043b4a9aa97 // indirect
-	github.com/sagernet/quic-go v0.0.0-20230809023643-d720ed35ac2b // indirect
+	github.com/sagernet/quic-go v0.0.0-20230821100820-d38697ecdbb0 // indirect
 	github.com/sagernet/reality v0.0.0-20230406110435-ee17307e7691 // indirect
-	github.com/sagernet/sing-mux v0.1.3-0.20230803070305-ea4a972acd21 // indirect
+	github.com/sagernet/sing-mux v0.1.3-0.20230811111955-dc1639b5204c // indirect
 	github.com/sagernet/sing-shadowsocks v0.2.4 // indirect
 	github.com/sagernet/sing-shadowsocks2 v0.1.3 // indirect
 	github.com/sagernet/sing-shadowtls v0.1.4 // indirect
-	github.com/sagernet/sing-tun v0.1.12-0.20230808120247-47ab78d303db // indirect
+	github.com/sagernet/sing-tun v0.1.12-0.20230821065522-7545dc2d5641 // indirect
 	github.com/sagernet/sing-vmess v0.1.7 // indirect
 	github.com/sagernet/smux v0.0.0-20230312102458-337ec2a5af37 // indirect
-	github.com/sagernet/tfo-go v0.0.0-20230303015439-ffcfd8c41cf9 // indirect
+	github.com/sagernet/tfo-go v0.0.0-20230816093905-5a5c285d44a6 // indirect
 	github.com/sagernet/utls v0.0.0-20230309024959-6732c2ab36f2 // indirect
 	github.com/sagernet/websocket v0.0.0-20220913015213-615516348b4e // indirect
-	github.com/sagernet/wireguard-go v0.0.0-20221116151939-c99467f53f2c // indirect
+	github.com/sagernet/wireguard-go v0.0.0-20230807125731-5d4a7ef2dc5f // indirect
 	github.com/scaleway/scaleway-sdk-go v1.0.0-beta.17 // indirect
 	github.com/scjalliance/comshim v0.0.0-20230315213746-5e51f40bd3b9 // indirect
 	github.com/seiflotfy/cuckoofilter v0.0.0-20220411075957-e3b120b3f5fb // indirect
@@ -193,7 +193,6 @@ require (
 	github.com/yandex-cloud/go-sdk v0.0.0-20220805164847-cf028e604997 // indirect
 	github.com/zeebo/blake3 v0.2.3 // indirect
 	go.opencensus.io v0.24.0 // indirect
-	go.uber.org/atomic v1.11.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/ratelimit v0.2.0 // indirect
 	go.uber.org/zap v1.25.0 // indirect
@@ -220,7 +219,7 @@ require (
 
 exclude gvisor.dev/gvisor v0.0.0-20230313184804-9bf6dd27710d
 
-replace github.com/inazumav/sing-box v0.0.0-20230809113805-82b279719f5f => github.com/stitchrs/sing-box-inazumav v0.0.0-20230811152854-00b96faf9583
+replace github.com/inazumav/sing-box v0.0.0-20230809113805-82b279719f5f => github.com/stitchrs/sing-box-inazumav v0.0.0-20230821175629-1278c14e6858
 
 replace github.com/sagernet/sing-vmess v0.1.7 => github.com/inazumav/sing-vmess v0.0.0-20230814021806-b8bb0c6bdd29
 

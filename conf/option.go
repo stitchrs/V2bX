@@ -39,6 +39,7 @@ type SingOptions struct {
 type TuicConfig struct {
 	Alpn              []string `yaml:"Alpn"`
 	CongestionControl string   `yaml:"CongestionControl"`
+	UdpOverStream     bool     `yaml:"udp_over_stream"`
 }
 
 type FallBackConfigForXray struct {

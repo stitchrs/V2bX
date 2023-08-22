@@ -1,7 +1,5 @@
 package conf
 
-import "github.com/inazumav/sing-box/option"
-
 type SingConfig struct {
 	LogConfig     SingLogConfig `yaml:"Log"`
 	OriginalPath  string        `yaml:"OriginalPath"`
@@ -17,10 +15,8 @@ type SingLogConfig struct {
 }
 
 type SingNtpConfig struct {
-	Enable     bool            `yaml:"Enable"`
-	Server     string          `yaml:"Server"`
-	ServerPort int             `yaml:"ServerPort"`
-	Interval   option.Duration `yaml:"Interval" json:"Interval"`
+	Enable bool   `yaml:"Enable"`
+	Server string `yaml:"Server"`
 }
 
 func NewSingConfig() *SingConfig {

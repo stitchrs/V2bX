@@ -55,11 +55,9 @@ func New(c *conf.CoreConfig) (vCore.Core, error) {
 	os.Setenv("SING_DNS_PATH", "")
 	options.NTP = &option.NTPOptions{
 		Enabled:       sc.NtpConfig.Enable,
-		Interval:      sc.NtpConfig.Interval,
 		WriteToSystem: true,
 		ServerOptions: option.ServerOptions{
-			Server:     sc.NtpConfig.Server,
-			ServerPort: uint16(sc.NtpConfig.ServerPort),
+			Server: sc.NtpConfig.Server,
 		},
 	}
 	if sc.DnsConfigPath != "" {

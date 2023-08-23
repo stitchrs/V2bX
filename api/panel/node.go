@@ -227,7 +227,7 @@ func (c *Client) GetNodeInfo() (node *NodeInfo, err error) {
 	node.PushInterval = intervalToTime(common.BaseConfig.PushInterval)
 	// parse protocol params
 	switch c.NodeType {
-	case "v2ray", "vless":
+	case "vmess", "vless":
 		rsp := V2rayNodeRsp{}
 		err = json.Unmarshal(r.Body(), &rsp)
 		if err != nil {
@@ -239,10 +239,16 @@ func (c *Client) GetNodeInfo() (node *NodeInfo, err error) {
 		if rsp.Tls == 1 {
 			node.Tls = true
 		}
-		err = json.Unmarshal(rsp.NetworkSettings, &node.ExtraConfig)
-		if err != nil {
-			return nil, fmt.Errorf("decode v2ray extra error: %s", err)
+		if rsp.Tls == 2 {
+			node.ExtraConfig.EnableReality = "true"
 		}
+		if node.Type == "vmess" {
+			err = json.Unmarshal(rsp.NetworkSettings, &node.ExtraConfig)
+			if err != nil {
+				return nil, fmt.Errorf("decode v2ray extra error: %s", err)
+			}
+		}
+
 		if node.ExtraConfig.EnableReality == "true" {
 			if node.ExtraConfig.RealityConfig == nil {
 				node.ExtraConfig.EnableReality = "false"

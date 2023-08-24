@@ -81,7 +81,7 @@ func getInboundOptions(tag string, info *panel.NodeInfo, c *conf.Options) (optio
 			}
 		case "remote":
 			if info.ExtraConfig.EnableReality == "true" {
-				if c.CertConfig.RealityConfig == nil {
+				if c.CertConfig.RealityConfig == nil && info.Type != "vless" {
 					return option.Inbound{}, fmt.Errorf("RealityConfig is not valid")
 				}
 				rc := info.ExtraConfig.RealityConfig
@@ -113,7 +113,7 @@ func getInboundOptions(tag string, info *panel.NodeInfo, c *conf.Options) (optio
 	}
 
 	switch info.Type {
-	case "v2ray", "vless":
+	case "vmess", "vless":
 		t := option.V2RayTransportOptions{
 			Type: info.Network,
 		}

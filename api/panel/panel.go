@@ -46,7 +46,7 @@ func New(c *conf.ApiConfig) (*Client, error) {
 	// Check node type
 	c.NodeType = strings.ToLower(c.NodeType)
 	switch c.NodeType {
-	case "v2ray", "vless", "trojan", "shadowsocks", "hysteria", "tuic":
+	case "vmess", "vless", "trojan", "shadowsocks", "hysteria", "tuic":
 	default:
 		return nil, fmt.Errorf("unsupported Node type: %s", c.NodeType)
 	}

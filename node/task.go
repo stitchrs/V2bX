@@ -28,7 +28,7 @@ func (c *Controller) startTasks(node *panel.NodeInfo) {
 	_ = c.userReportPeriodic.Start(false)
 	if node.Tls {
 		switch c.CertConfig.CertMode {
-		case "reality", "none", "", "file":
+		case "reality", "none", "", "file", "remote":
 		default:
 			c.renewCertPeriodic = &task.Task{
 				Interval: time.Hour * 24,

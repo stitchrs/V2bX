@@ -4,13 +4,13 @@ import (
 	"bytes"
 	"encoding/base64"
 	"fmt"
+	"github.com/InazumaV/V2bX/common/crypt"
 	"os"
 	"reflect"
 	"strconv"
 	"strings"
 	"time"
 
-	"github.com/InazumaV/V2bX/common/crypt"
 	"github.com/goccy/go-json"
 	log "github.com/sirupsen/logrus"
 )
@@ -37,8 +37,10 @@ type BaseConfig struct {
 type V2rayNodeRsp struct {
 	Tls             int             `json:"tls"`
 	Network         string          `json:"network"`
-	NetworkSettings json.RawMessage `json:"networkSettings"`
+	NetworkSettings json.RawMessage `json:"network_settings"`
+	TlsSettings     TlsSettings     `json:"tls_settings"`
 	ServerName      string          `json:"server_name"`
+	Flow            string          `json:"flow"`
 }
 
 type ShadowsocksNodeRsp struct {
@@ -62,6 +64,7 @@ type NodeInfo struct {
 	ExtraConfig     V2rayExtraConfig
 	NetworkSettings json.RawMessage
 	Tls             bool
+	TlsSettings     TlsSettings
 	EnableTuic      bool
 	ServerName      string
 	UpMbps          int
@@ -72,6 +75,13 @@ type NodeInfo struct {
 
 	PushInterval time.Duration
 	PullInterval time.Duration
+}
+
+type TlsSettings struct {
+	ServerName string `json:"server_name"`
+	ServerPort string `json:"server_port"`
+	PublicKey  string `json:"public_key"`
+	ShortId    string `json:"short_id"`
 }
 
 type Rules struct {
@@ -235,11 +245,14 @@ func (c *Client) GetNodeInfo() (node *NodeInfo, err error) {
 		}
 		node.Network = rsp.Network
 		node.NetworkSettings = rsp.NetworkSettings
+		node.TlsSettings = rsp.TlsSettings
 		node.ServerName = rsp.ServerName
+		node.ExtraConfig.VlessFlow = rsp.Flow
 		if rsp.Tls == 1 {
 			node.Tls = true
 		}
 		if rsp.Tls == 2 {
+			node.Tls = true
 			node.ExtraConfig.EnableReality = "true"
 		}
 		if node.Type == "vmess" {
@@ -248,14 +261,17 @@ func (c *Client) GetNodeInfo() (node *NodeInfo, err error) {
 				return nil, fmt.Errorf("decode v2ray extra error: %s", err)
 			}
 		}
-
 		if node.ExtraConfig.EnableReality == "true" {
-			if node.ExtraConfig.RealityConfig == nil {
+			if node.ExtraConfig.RealityConfig == nil && node.Type == "vmess" {
 				node.ExtraConfig.EnableReality = "false"
 			} else {
-				key := crypt.GenX25519Private([]byte(strconv.Itoa(c.NodeId) + c.NodeType + c.Token +
-					node.ExtraConfig.RealityConfig.PrivateKey))
-				node.ExtraConfig.RealityConfig.PrivateKey = base64.RawURLEncoding.EncodeToString(key)
+				key := crypt.GenX25519Private([]byte(c.NodeType + c.Token))
+				node.ExtraConfig.RealityConfig = &RealityConfig{
+					ServerNames: []string{node.TlsSettings.ServerName},
+					Dest:        node.TlsSettings.ServerPort,
+					PrivateKey:  base64.RawURLEncoding.EncodeToString(key),
+					ShortIds:    []string{node.TlsSettings.ShortId},
+				}
 			}
 		}
 	case "shadowsocks":

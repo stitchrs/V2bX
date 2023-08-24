@@ -24,7 +24,7 @@ func (c *Controller) renewCertTask() error {
 
 func (c *Controller) requestCert() error {
 	switch c.CertConfig.CertMode {
-	case "reality", "none", "":
+	case "remote", "reality", "none", "":
 		return nil
 	case "file":
 		if c.CertConfig.CertFile == "" || c.CertConfig.KeyFile == "" {
